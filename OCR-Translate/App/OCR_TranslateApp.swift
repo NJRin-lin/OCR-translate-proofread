@@ -12,7 +12,7 @@ struct OCRTranslateApp: App {
         .defaultSize(width: 1200, height: 750)
 
         Settings {
-            SettingsView(analysisMode: .constant(.detailed))
+            SettingsView(analysisMode: .constant(.proofread))
         }
     }
 }

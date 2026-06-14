@@ -5,12 +5,14 @@ struct ContentView: View {
     @State private var ocrResult: OCRResult?
     @State private var translationResult: TranslationResult?
     @State private var analysisResult: AnalysisResult?
-    @State private var analysisMode: AnalysisMode = .detailed
+    @State private var analysisMode: AnalysisMode = .proofread
     @State private var isProcessingOCR = false
     @State private var isProcessingAI = false
     @State private var errorMessage: String?
     @State private var showingSettings = false
     @State private var pendingImage: NSImage?
+    @State private var analysisCache: [AnalysisMode: AnalysisResult] = [:]
+    @State private var lookupWord: String = ""
 
     private let ocrService = OCRService()
     private let translationService = TranslationService()
@@ -50,6 +52,25 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView(analysisMode: $analysisMode)
+        }
+        .onChange(of: analysisMode) { _, _ in
+            let text = cleanedOCRText
+            guard !text.isEmpty else { return }
+            if let cached = analysisCache[analysisMode] {
+                analysisResult = cached
+                return
+            }
+            Task {
+                isProcessingAI = true
+                if translationResult == nil {
+                    // No translation yet — run full pipeline
+                    await performTranslationAndAnalysis()
+                } else if let result = try? await analysisService.analyze(text: text, mode: analysisMode) {
+                    analysisResult = result
+                    analysisCache[analysisMode] = result
+                }
+                isProcessingAI = false
+            }
         }
     }
 
@@ -130,13 +151,21 @@ struct ContentView: View {
     private var translationDetailView: some View {
         Group {
             if let translation = translationResult {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        TranslationResultView(result: translation, originalText: ocrResult?.fullText ?? "")
-                        Divider()
-                        AnalysisView(result: analysisResult)
+                VStack(spacing: 0) {
+                    VocabularyLookupView(externalQuery: $lookupWord)
+
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 16) {
+                            TranslationResultView(result: translation, originalText: ocrResult?.fullText ?? "")
+
+                            if analysisResult != nil {
+                                Divider()
+                            }
+
+                            AnalysisView(result: analysisResult)
+                        }
+                        .padding()
                     }
-                    .padding()
                 }
             } else if let ocr = ocrResult {
                 VStack(spacing: 20) {
@@ -206,13 +235,28 @@ struct ContentView: View {
     // MARK: - Analysis Mode Picker
 
     private var analysisModePicker: some View {
-        Picker("分析模式", selection: $analysisMode) {
-            ForEach(AnalysisMode.allCases, id: \.self) { mode in
-                Text(mode.rawValue).tag(mode)
+        HStack(spacing: 8) {
+            if isProcessingAI {
+                ProgressView()
+                    .progressViewStyle(.linear)
+                    .frame(width: 80)
+                    .help("正在分析...")
             }
+            Picker("分析模式", selection: $analysisMode) {
+                ForEach(AnalysisMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 150)
         }
-        .pickerStyle(.segmented)
-        .frame(width: 150)
+    }
+
+    private var cleanedOCRText: String {
+        (ocrResult?.fullText ?? "")
+            .replacingOccurrences(of: "\n", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - Actions
@@ -244,6 +288,7 @@ struct ContentView: View {
         analysisResult = nil
         errorMessage = nil
         pendingImage = nil
+        analysisCache = [:]
     }
 
     // MARK: - OCR (local, no API needed)
@@ -281,11 +326,12 @@ struct ContentView: View {
 
         do {
             async let translation = translationService.translate(text: ocr.fullText)
-            async let analysis = analysisService.analyze(text: ocr.fullText, mode: analysisMode)
+            async let analysis = analysisService.analyze(text: cleanedOCRText, mode: analysisMode)
 
             let (trans, anal) = try await (translation, analysis)
             translationResult = trans
             analysisResult = anal
+            analysisCache[analysisMode] = anal
         } catch {
             errorMessage = error.localizedDescription
         }

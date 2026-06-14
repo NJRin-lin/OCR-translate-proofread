@@ -3,6 +3,7 @@ import SwiftUI
 struct TranslationResultView: View {
     let result: TranslationResult
     let originalText: String
+    var onLookup: ((String) -> Void)?
 
     private var cleanedOriginal: String {
         originalText

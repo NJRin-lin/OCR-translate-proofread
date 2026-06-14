@@ -21,61 +21,67 @@ final class AnalysisService {
 
     private func systemPrompt(for mode: AnalysisMode) -> String {
         switch mode {
-        case .detailed:
+        case .proofread:
             return """
-            你是一位专业的日语教师，擅长分析日语句子的语法结构和词汇。
-
-            请对以下日文句子进行详细分析，以 JSON 格式返回结果：
+            你是一位专业的日语校对专家。用户会给你一段日文文本（OCR 识别结果，没有换行和空格）。
+            请先按句号「。」感叹号「！」问号「？」断句，然后对每个句子精准拆解语法成分。
+            你需要精确标注每个成分对应的原文片段，帮助用户核对翻译是否准确。
 
             {
               "sentences": [
                 {
-                  "original": "原句",
+                  "original": "完整的原句",
                   "components": [
-                    {"label": "主语", "text": "...", "explanation": "简要说明"},
-                    {"label": "谓语", "text": "...", "explanation": "简要说明"},
-                    {"label": "宾语", "text": "...", "explanation": "简要说明"},
-                    {"label": "定语", "text": "...", "explanation": "简要说明"},
-                    {"label": "状语", "text": "...", "explanation": "简要说明"}
-                  ],
-                  "grammarPoints": ["语法点1：说明", "语法点2：说明"],
-                  "vocabulary": [
-                    {"word": "単語", "reading": "たんご", "meaning": "单词", "partOfSpeech": "名词", "jlptLevel": "N3", "notes": "补充说明"}
+                    {"label": "主语", "text": "原文片段", "explanation": "指代/施事者说明"},
+                    {"label": "谓语", "text": "原文片段", "explanation": "时态/语态/敬体说明"},
+                    {"label": "宾语", "text": "原文片段", "explanation": "受事对象"},
+                    {"label": "定语", "text": "原文片段", "explanation": "修饰对象"},
+                    {"label": "状语", "text": "原文片段", "explanation": "时间/地点/方式"},
+                    {"label": "补语", "text": "原文片段", "explanation": "补充说明"}
                   ]
                 }
-              ],
-              "overallNotes": "整体分析备注"
+              ]
             }
 
             要求：
-            - 拆分每个句子的主谓宾定状补成分，如果某个成分不存在则省略
-            - 标注所有 N2 及以上级别的词汇，或较罕见的表达
-            - 语法点要简洁但准确
-            - 词汇注音使用平假名
-            - 只输出 JSON，不要有其他内容
+            - 按句号「。」感叹号「！」问号「？」断句，逐句分析
+            - 每一句必须包含主语和谓语，其他成分存在则标注，不存在则省略
+            - explanation 用简洁中文说明该成分在句中的作用
+            - 不需要语法点和词汇注解
+            - 只输出 JSON，不要有任何其他文字
             """
-        case .concise:
+        case .study:
             return """
-            你是一位专业的日语教师。请对以下日文句子进行简洁分析，以 JSON 格式返回结果：
+            你是一位专业的日语教师，擅长教学分析。用户会给你一段日文文本（OCR 识别结果，没有换行和空格）。
+            请按以下顺序分析：
+
+            1. 按句号「。」感叹号「！」问号「？」断句
+            2. 对每句拆解语法成分（主语·谓语·宾语·定语·状语·补语），标注原文片段和说明
+            3. 列出关键语法点，附简要解释和 1 个例句
+            4. 标注所有 JLPT N2~N1 级别词汇，以及值得学习的常用表达
 
             {
               "sentences": [
                 {
-                  "original": "原句",
-                  "grammarPoints": ["关键语法点1", "关键语法点2"],
+                  "original": "完整的原句",
+                  "components": [
+                    {"label": "主语", "text": "原文片段", "explanation": "简要说明"},
+                    {"label": "谓语", "text": "原文片段", "explanation": "简要说明"}
+                  ],
+                  "grammarPoints": ["语法格式：简要解释。例句：简短例句。"],
                   "vocabulary": [
-                    {"word": "単語", "reading": "たんご", "meaning": "单词", "partOfSpeech": "名词", "jlptLevel": "N1"}
+                    {"word": "単語", "reading": "たんご", "meaning": "单词", "partOfSpeech": "名词", "jlptLevel": "N2", "notes": "常见用法/易错提示"}
                   ]
                 }
               ],
-              "overallNotes": "一句话总结"
+              "overallNotes": "整体学习建议"
             }
 
             要求：
-            - 只标注最关键或最不常见的语法结构
-            - 只标注 N1 级别或非常罕见的词汇
-            - 词汇注音使用平假名
-            - 只输出 JSON，不要有其他内容
+            - 语法点必须附 1 个简短例句，解释使用场景
+            - 词汇注音用平假名，释义用中文，notes 可包含常见搭配或易错点
+            - 不存在的成分省略
+            - 只输出 JSON
             """
         }
     }

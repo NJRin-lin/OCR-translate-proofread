@@ -98,6 +98,7 @@ struct CroppableImageView: View {
                 })
                 .allowsHitTesting(false)
             }
+            .background(FrameReader { viewFrameInWindow = $0 })
             .clipToBounds()
             .gesture(
                 SimultaneousGesture(magnifyGesture, dragGesture)
@@ -180,11 +181,16 @@ struct CroppableImageView: View {
 
     // MARK: - Scroll Monitor
 
+    @State private var viewFrameInWindow: CGRect = .zero
     @State private var scrollMonitorToken: Any?
 
     private func setupMonitor() {
         scrollMonitorToken = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { event in
-            guard NSApp.isActive else { return event }
+            guard NSApp.isActive,
+                  NSApp.keyWindow?.attachedSheet == nil,
+                  event.window === NSApp.keyWindow else { return event }
+            let loc = event.locationInWindow
+            guard self.viewFrameInWindow.contains(loc) else { return event }
 
             if event.hasPreciseScrollingDeltas {
                 DispatchQueue.main.async {
@@ -595,6 +601,32 @@ private struct CursorTracker: NSViewRepresentable {
 
         override func cursorUpdate(with event: NSEvent) {
             // Triggered by system; cursor pick is handled in SwiftUI callback
+        }
+    }
+}
+
+// MARK: - View frame in window coords (for hit-testing scroll)
+
+private struct FrameReader: NSViewRepresentable {
+    var onFrame: (CGRect) -> Void
+
+    func makeNSView(context: Context) -> Reader {
+        Reader(onFrame: onFrame)
+    }
+
+    func updateNSView(_ v: Reader, context: Context) {
+        v.onFrame = onFrame
+        v.report()
+    }
+
+    final class Reader: NSView {
+        fileprivate var onFrame: (CGRect) -> Void
+        init(onFrame: @escaping (CGRect) -> Void) { self.onFrame = onFrame; super.init(frame: .zero) }
+        required init?(coder: NSCoder) { fatalError() }
+        override func viewDidMoveToWindow() { super.viewDidMoveToWindow(); report() }
+        func report() {
+            guard window != nil else { return }
+            onFrame(convert(bounds, to: nil))
         }
     }
 }

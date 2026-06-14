@@ -119,8 +119,8 @@ struct SettingsView: View {
             }
 
             Picker("", selection: $analysisMode) {
-                Text("详细分析 — 完整句子拆解 + 逐词注解").tag(AnalysisMode.detailed)
-                Text("简洁分析 — 仅关键语法 + 罕见词汇").tag(AnalysisMode.concise)
+                Text("学习模式 — 句子拆解 + 语法 + 词汇注解").tag(AnalysisMode.study)
+                Text("校对模式 — 精准句子成分拆解").tag(AnalysisMode.proofread)
             }
             .pickerStyle(.radioGroup)
         }

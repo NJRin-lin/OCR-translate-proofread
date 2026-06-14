@@ -1,8 +1,8 @@
 import Foundation
 
 enum AnalysisMode: String, CaseIterable, Equatable {
-    case detailed = "详细分析"
-    case concise = "简洁分析"
+    case proofread = "校对模式"
+    case study = "学习模式"
 }
 
 struct VocabularyAnnotation: Identifiable, Equatable {
