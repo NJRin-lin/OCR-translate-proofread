@@ -21,6 +21,7 @@ struct CroppableImageView: View {
     @State private var dragEnd: CGPoint?
     @State private var imageFrame: CGRect = .zero
     @State private var imagePixelSize: CGSize = .zero
+    @State private var measuredBaseFrame: CGRect = .zero
     @State private var isSelectionMode = false
 
     @State private var scale: CGFloat = 1.0
@@ -71,7 +72,16 @@ struct CroppableImageView: View {
                         .aspectRatio(contentMode: .fit)
                         .scaleEffect(scale)
                         .offset(x: panOffset.x, y: panOffset.y)
-                        .background(Color.clear)
+                        .background(
+                            GeometryReader { imgGeo in
+                                Color.clear
+                                    .onAppear {
+                                        if measuredBaseFrame == .zero {
+                                            measuredBaseFrame = imgGeo.frame(in: .named("zstackSpace"))
+                                        }
+                                    }
+                            }
+                        )
                         .onAppear {
                             imageFrame = computeImageFrame(in: geometry.size)
                             setupMonitor()
@@ -85,6 +95,7 @@ struct CroppableImageView: View {
                     cropOverlay(selection: sel)
                 }
             }
+            .coordinateSpace(name: "zstackSpace")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.ultraThinMaterial)
             .overlay {
@@ -521,14 +532,20 @@ struct CroppableImageView: View {
     }
 
     private func cropImage(with selection: CGRect) -> NSImage? {
-        let f = scaledImageFrame
-        guard f.width > 0, f.height > 0,
+        // Use measured base frame for accurate pixel mapping, fallback to computed
+        let bf = measuredBaseFrame != .zero ? measuredBaseFrame : imageFrame
+        let fw = bf.width * scale
+        let fh = bf.height * scale
+        let fx = bf.midX + panOffset.x - fw / 2
+        let fy = bf.midY + panOffset.y - fh / 2
+
+        guard fw > 0, fh > 0,
               imagePixelSize.width > 0, imagePixelSize.height > 0,
               let cg = resolveCGImage() else { return nil }
-        let px = (selection.origin.x - f.origin.x) / f.width * imagePixelSize.width
-        let py = (selection.origin.y - f.origin.y) / f.height * imagePixelSize.height
-        let pw = selection.size.width / f.width * imagePixelSize.width
-        let ph = selection.size.height / f.height * imagePixelSize.height
+        let px = (selection.origin.x - fx) / fw * imagePixelSize.width
+        let py = (selection.origin.y - fy) / fh * imagePixelSize.height
+        let pw = selection.size.width / fw * imagePixelSize.width
+        let ph = selection.size.height / fh * imagePixelSize.height
         let r = CGRect(x: max(0, round(px)), y: max(0, round(py)),
                         width: min(round(pw), imagePixelSize.width - round(px)),
                         height: min(round(ph), imagePixelSize.height - round(py)))
