@@ -187,8 +187,7 @@ struct CroppableImageView: View {
     private func setupMonitor() {
         scrollMonitorToken = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { event in
             guard NSApp.isActive,
-                  NSApp.keyWindow?.attachedSheet == nil,
-                  event.window === NSApp.keyWindow else { return event }
+                  event.window === NSApp.mainWindow else { return event }
             let loc = event.locationInWindow
             guard self.viewFrameInWindow.contains(loc) else { return event }
 

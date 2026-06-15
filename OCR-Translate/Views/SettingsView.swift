@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Binding var analysisMode: AnalysisMode
     @Environment(\.dismiss) private var dismiss
 
+    @State private var selectedProvider: AIProvider = .deepseek
     @State private var apiKey: String = ""
     @State private var showKey: Bool = false
     @State private var saveStatus: String?
@@ -27,6 +28,8 @@ struct SettingsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                    providerSection
+                    Divider()
                     apiKeySection
                     Divider()
                     analysisModeSection
@@ -36,8 +39,36 @@ struct SettingsView: View {
                 .padding()
             }
         }
-        .frame(width: 480, height: 420)
-        .onAppear { apiKey = store.read() ?? "" }
+        .frame(width: 500, height: 520)
+        .onAppear {
+            selectedProvider = store.activeProvider
+            loadKey()
+        }
+        .onChange(of: selectedProvider) { _, _ in
+            store.activeProvider = selectedProvider
+            loadKey()
+            saveStatus = nil
+        }
+    }
+
+    // MARK: - Provider Picker
+
+    private var providerSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "cpu.fill")
+                    .foregroundStyle(.blue)
+                Text("AI 模型")
+                    .font(.headline)
+            }
+
+            Picker("", selection: $selectedProvider) {
+                ForEach(AIProvider.allCases, id: \.self) { provider in
+                    Text(provider.displayName).tag(provider)
+                }
+            }
+            .pickerStyle(.radioGroup)
+        }
     }
 
     // MARK: - API Key Section
@@ -47,7 +78,7 @@ struct SettingsView: View {
             HStack {
                 Image(systemName: "key.fill")
                     .foregroundStyle(.blue)
-                Text("DeepSeek API Key")
+                Text("\(selectedProvider.shortName) API Key")
                     .font(.headline)
             }
 
@@ -57,11 +88,11 @@ struct SettingsView: View {
 
             HStack {
                 if showKey {
-                    TextField("sk-xxxxxxxx", text: $apiKey)
+                    TextField("\(selectedProvider.keyPrefix)...", text: $apiKey)
                         .textFieldStyle(.roundedBorder)
                         .font(.body.monospaced())
                 } else {
-                    SecureField("sk-xxxxxxxx", text: $apiKey)
+                    SecureField("\(selectedProvider.keyPrefix)...", text: $apiKey)
                         .textFieldStyle(.roundedBorder)
                 }
 
@@ -76,8 +107,8 @@ struct SettingsView: View {
                 Button("保存") {
                     let trimmed = apiKey.trimmingCharacters(in: .whitespaces)
                     guard !trimmed.isEmpty else { return }
-                    store.save(trimmed)
-                    saveStatus = "已保存"
+                    store.save(trimmed, for: selectedProvider)
+                    saveStatus = "\(selectedProvider.shortName) 已保存"
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) { saveStatus = nil }
                 }
                 .buttonStyle(.borderedProminent)
@@ -85,7 +116,7 @@ struct SettingsView: View {
                 .disabled(apiKey.trimmingCharacters(in: .whitespaces).isEmpty)
 
                 Button("删除") {
-                    store.delete()
+                    store.delete(for: selectedProvider)
                     apiKey = ""
                     saveStatus = "已删除"
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) { saveStatus = nil }
@@ -101,7 +132,7 @@ struct SettingsView: View {
                 }
             }
 
-            Text("获取 API Key: platform.deepseek.com → API Keys")
+            Text("获取 Key: \(selectedProvider.getKeyURL)")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
@@ -138,19 +169,24 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("OCR 翻译学习工具")
+                Text("OCR 翻译校对工具")
                     .font(.body)
                 Text("版本 1.0.0")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("使用 macOS Vision 框架进行 OCR 识别")
+                Text("开发者：NJRin")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("翻译与分析由 DeepSeek 提供支持")
+                Text("技术支持：虹之咲学园 Vibe Coding 同好会")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
     }
 
+    // MARK: - Helpers
+
+    private func loadKey() {
+        apiKey = store.read(for: selectedProvider) ?? ""
+    }
 }

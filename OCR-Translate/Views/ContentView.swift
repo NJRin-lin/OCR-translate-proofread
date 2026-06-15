@@ -21,7 +21,7 @@ struct ContentView: View {
     private let imageLoader = ImageLoader()
     private let apiKeyStore = APIKeyStore()
 
-    private var hasAPIKey: Bool { apiKeyStore.hasKey() }
+    private var hasAPIKey: Bool { apiKeyStore.hasActiveKey() }
 
     var body: some View {
         NavigationSplitView {
@@ -249,6 +249,7 @@ struct ContentView: View {
             }
             .pickerStyle(.segmented)
             .frame(width: 150)
+            .contextMenu { EmptyView() }
         }
     }
 

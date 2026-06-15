@@ -7,6 +7,7 @@ struct VocabularyLookupView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var isExpanded = true
+    @State private var notesExpanded = false
 
     private let service = VocabularyService()
     @FocusState private var isFocused: Bool
@@ -26,7 +27,10 @@ struct VocabularyLookupView: View {
                     .onSubmit { performLookup() }
 
                 if !query.isEmpty {
-                    Button(action: { query = "" }) {
+                    Button(action: {
+                        query = ""
+                        isExpanded = false
+                    }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.secondary)
                             .font(.caption)
@@ -50,11 +54,11 @@ struct VocabularyLookupView: View {
 
                 if let _ = result {
                     Button(action: { isExpanded.toggle() }) {
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        Label(isExpanded ? "收起" : "展开",
+                              systemImage: isExpanded ? "chevron.up" : "chevron.down")
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.borderedProminent)
                     .controlSize(.small)
-                    .font(.caption)
                 }
             }
             .padding(.horizontal, 14)
@@ -69,7 +73,6 @@ struct VocabularyLookupView: View {
                     .padding(.top, 2)
             }
         }
-        .zIndex(1)
         .overlay(alignment: .top) {
             if let entry = result, isExpanded {
                 VStack {
@@ -80,6 +83,7 @@ struct VocabularyLookupView: View {
                 }
             }
         }
+        .zIndex(2)
         .onChange(of: externalQuery) { _, newValue in
             guard !newValue.isEmpty else { return }
             query = newValue
@@ -104,9 +108,11 @@ struct VocabularyLookupView: View {
             HStack(spacing: 6) {
                 Text(entry.word)
                     .font(.system(.body, design: .serif).bold())
+                    .textSelection(.enabled)
                 Text("(\(entry.reading))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
 
                 if let pos = entry.partOfSpeech {
                     Text(pos)
@@ -128,11 +134,25 @@ struct VocabularyLookupView: View {
 
             Text(entry.meaning)
                 .font(.callout)
+                .textSelection(.enabled)
 
             if let notes = entry.notes {
-                Text(notes)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                        .lineLimit(notesExpanded ? nil : 2)
+
+                    if notes.count >= 60 {
+                        Button(action: { notesExpanded.toggle() }) {
+                            Text(notesExpanded ? "收起" : "展开全部")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
             }
 
             if !entry.examples.isEmpty {
@@ -140,7 +160,7 @@ struct VocabularyLookupView: View {
                     ForEach(entry.examples, id: \.self) { ex in
                         HStack(alignment: .top, spacing: 4) {
                             Text("·").foregroundStyle(.purple).font(.caption)
-                            Text(ex).font(.caption)
+                            Text(ex).font(.caption).textSelection(.enabled)
                         }
                     }
                 }
@@ -167,6 +187,7 @@ struct VocabularyLookupView: View {
         errorMessage = nil
         result = nil
         isExpanded = true
+        notesExpanded = false
 
         Task {
             do {
