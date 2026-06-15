@@ -72,18 +72,12 @@ struct VocabularyLookupView: View {
                     .padding(.horizontal, 12)
                     .padding(.top, 2)
             }
-        }
-        .overlay(alignment: .top) {
+
             if let entry = result, isExpanded {
-                VStack {
-                    Spacer().frame(height: 40)
-                    vocabCard(entry)
-                        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                        .padding(.horizontal, 4)
-                }
+                vocabCard(entry)
+                    .padding(.top, 4)
             }
         }
-        .zIndex(2)
         .onChange(of: externalQuery) { _, newValue in
             guard !newValue.isEmpty else { return }
             query = newValue
