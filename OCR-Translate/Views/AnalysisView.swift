@@ -55,7 +55,7 @@ struct AnalysisView: View {
                         .padding(.top, 8)
                         .padding(.bottom, 6)
 
-                    componentTable(sentence.components)
+                    componentTree(sentence.components)
                         .padding(.horizontal, 14)
                 }
             }
@@ -83,10 +83,10 @@ struct AnalysisView: View {
         )
     }
 
-    // MARK: - Component Table
+    // MARK: - Component Tree
 
-    private func componentTable(_ components: [SentenceComponent]) -> some View {
-        let lines = buildTableLines(components)
+    private func componentTree(_ components: [SentenceComponent]) -> some View {
+        let lines = renderTree(components, prefix: "")
         return Text(verbatim: lines.joined(separator: "\n"))
             .font(.system(.caption, design: .monospaced))
             .foregroundStyle(.primary)
@@ -98,49 +98,26 @@ struct AnalysisView: View {
             )
     }
 
-    private func buildTableLines(_ components: [SentenceComponent]) -> [String] {
-        // Column widths
-        let labelColW = max(6, components.map { $0.label.count }.max() ?? 0) + 2
-        let textColW = max(6, components.map { $0.text.count }.max() ?? 0) + 2
-        let explColW = max(6, components.map { $0.explanation?.count ?? 0 }.max() ?? 0) + 2
-
-        func pad(_ s: String, _ w: Int) -> String {
-            let diff = w - s.count
-            guard diff > 0 else { return s }
-            return s + String(repeating: " ", count: diff)
-        }
-
-        let sep = "├" + String(repeating: "─", count: labelColW + 1) + "┼"
-                     + String(repeating: "─", count: textColW + 1) + "┼"
-                     + String(repeating: "─", count: explColW + 1) + "┤"
-
+    private func renderTree(_ components: [SentenceComponent], prefix: String) -> [String] {
         var lines: [String] = []
+        for (i, comp) in components.enumerated() {
+            let isLast = i == components.count - 1
+            let branch = isLast ? "└─ " : "├─ "
+            let label = comp.label
+            let text = comp.text
+            let expl = comp.explanation.map { $0.isEmpty ? nil : $0 } ?? nil
 
-        // Header
-        let header = "│ " + pad("成分", labelColW) + "│ " + pad("原文", textColW) + "│ " + pad("说明", explColW) + "│"
+            var line = prefix + branch + label + "：" + text
+            if let e = expl {
+                line += "（" + e + "）"
+            }
+            lines.append(line)
 
-        // Top border
-        let top = "┌" + String(repeating: "─", count: labelColW + 1) + "┬"
-                   + String(repeating: "─", count: textColW + 1) + "┬"
-                   + String(repeating: "─", count: explColW + 1) + "┐"
-
-        lines.append(top)
-        lines.append(header)
-        lines.append(sep)
-
-        for comp in components {
-            let label = pad(comp.label, labelColW)
-            let text = pad(comp.text, textColW)
-            let expl = pad(comp.explanation ?? "", explColW)
-            lines.append("│ " + label + "│ " + text + "│ " + expl + "│")
+            if !comp.children.isEmpty {
+                let childPrefix = prefix + (isLast ? "   " : "│  ")
+                lines.append(contentsOf: renderTree(comp.children, prefix: childPrefix))
+            }
         }
-
-        // Bottom border
-        let bot = "└" + String(repeating: "─", count: labelColW + 1) + "┴"
-                   + String(repeating: "─", count: textColW + 1) + "┴"
-                   + String(repeating: "─", count: explColW + 1) + "┘"
-        lines.append(bot)
-
         return lines
     }
 

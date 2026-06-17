@@ -28,15 +28,17 @@ final class TranslationService {
     请直接输出翻译结果，不要添加任何解释或说明。
     """
 
-    func translate(text: String) async throws -> TranslationResult {
+    func translate(text: String, glossary: String = "") async throws -> TranslationResult {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             throw TranslationError.emptyText
         }
 
+        let prompt = systemPrompt + glossary
+
         do {
             let translated = try await deepSeek.chat(
-                systemPrompt: systemPrompt,
+                systemPrompt: prompt,
                 userMessage: trimmed
             )
             return TranslationResult(

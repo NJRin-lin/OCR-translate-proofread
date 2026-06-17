@@ -15,6 +15,7 @@
 		B00000000000000000000005 /* ScreenshotManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000005 /* ScreenshotManager.swift */; };
 		B00000000000000000000006 /* APIKeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000006 /* APIKeyStore.swift */; };
 		B00000000000000000000007 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000007 /* ImageLoader.swift */; };
+		B00000000000000000000017 /* GlossaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000017 /* GlossaryStore.swift */; };
 		B00000000000000000000008 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000008 /* OCRService.swift */; };
 		B00000000000000000000009 /* DeepSeekService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000009 /* DeepSeekService.swift */; };
 		B0000000000000000000000A /* TranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000A /* TranslationService.swift */; };
@@ -27,6 +28,7 @@
 		B00000000000000000000010 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000010 /* SettingsView.swift */; };
 		B00000000000000000000012 /* CroppableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000012 /* CroppableImageView.swift */; };
 		B00000000000000000000014 /* VocabularyLookupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000014 /* VocabularyLookupView.swift */; };
+		B00000000000000000000016 /* ZoomableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000016 /* ZoomableImageView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +40,7 @@
 		F00000000000000000000005 /* ScreenshotManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotManager.swift; sourceTree = "<group>"; };
 		F00000000000000000000006 /* APIKeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyStore.swift; sourceTree = "<group>"; };
 		F00000000000000000000007 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
+		F00000000000000000000017 /* GlossaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlossaryStore.swift; sourceTree = "<group>"; };
 		F00000000000000000000008 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		F00000000000000000000009 /* DeepSeekService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekService.swift; sourceTree = "<group>"; };
 		F0000000000000000000000A /* TranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationService.swift; sourceTree = "<group>"; };
@@ -51,6 +54,7 @@
 		F00000000000000000000011 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F00000000000000000000012 /* CroppableImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CroppableImageView.swift; sourceTree = "<group>"; };
 		F00000000000000000000014 /* VocabularyLookupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyLookupView.swift; sourceTree = "<group>"; };
+		F00000000000000000000016 /* ZoomableImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableImageView.swift; sourceTree = "<group>"; };
 		R00000000000000000000001 /* OCR-Translate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OCR-Translate.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -108,6 +112,7 @@
 				F00000000000000000000010 /* SettingsView.swift */,
 				F00000000000000000000012 /* CroppableImageView.swift */,
 				F00000000000000000000014 /* VocabularyLookupView.swift */,
+				F00000000000000000000016 /* ZoomableImageView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -130,6 +135,7 @@
 				F00000000000000000000005 /* ScreenshotManager.swift */,
 				F00000000000000000000006 /* KeychainManager.swift */,
 				F00000000000000000000007 /* ImageLoader.swift */,
+				F00000000000000000000017 /* GlossaryStore.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -215,6 +221,7 @@
 				B00000000000000000000004 /* AnalysisResult.swift in Sources */,
 				B00000000000000000000005 /* ScreenshotManager.swift in Sources */,
 				B00000000000000000000006 /* KeychainManager.swift in Sources */,
+				B00000000000000000000017 /* GlossaryStore.swift in Sources */,
 				B00000000000000000000007 /* ImageLoader.swift in Sources */,
 				B00000000000000000000008 /* OCRService.swift in Sources */,
 				B00000000000000000000009 /* DeepSeekService.swift in Sources */,
@@ -226,6 +233,7 @@
 				B0000000000000000000000F /* AnalysisView.swift in Sources */,
 				B00000000000000000000010 /* SettingsView.swift in Sources */,
 				B00000000000000000000013 /* VocabularyService.swift in Sources */,
+				B00000000000000000000016 /* ZoomableImageView.swift in Sources */,
 				B00000000000000000000014 /* VocabularyLookupView.swift in Sources */,
 				B00000000000000000000012 /* CroppableImageView.swift in Sources */,
 			);

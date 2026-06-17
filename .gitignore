@@ -20,3 +20,5 @@ DerivedData/
 # macOS
 .DS_Store
 *.app
+*.dmg
+build/

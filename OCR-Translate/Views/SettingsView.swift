@@ -9,7 +9,11 @@ struct SettingsView: View {
     @State private var showKey: Bool = false
     @State private var saveStatus: String?
 
+    @State private var newWord: String = ""
+    @State private var newTranslation: String = ""
+
     private let store = APIKeyStore()
+    @StateObject private var glossary = GlossaryStore()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -34,12 +38,14 @@ struct SettingsView: View {
                     Divider()
                     analysisModeSection
                     Divider()
+                    glossarySection
+                    Divider()
                     aboutSection
                 }
                 .padding()
             }
         }
-        .frame(width: 500, height: 520)
+        .frame(width: 520, height: 600)
         .onAppear {
             selectedProvider = store.activeProvider
             loadKey()
@@ -154,6 +160,73 @@ struct SettingsView: View {
                 Text("校对模式 — 精准句子成分拆解").tag(AnalysisMode.proofread)
             }
             .pickerStyle(.radioGroup)
+        }
+    }
+
+    // MARK: - Glossary
+
+    private var glossarySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "character.book.closed.fill")
+                    .foregroundStyle(.orange)
+                Text("翻译术语表")
+                    .font(.headline)
+            }
+
+            Text("AI 翻译时将严格按照下列映射翻译指定词汇。建议单次使用的术语控制在 50 条以内")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            // Add new entry
+            HStack(spacing: 6) {
+                TextField("日语词汇", text: $newWord)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.caption)
+                    .frame(width: 120)
+                TextField("中文翻译", text: $newTranslation)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.caption)
+                    .frame(width: 120)
+                Button("添加") {
+                    glossary.add(word: newWord, translation: newTranslation)
+                    newWord = ""
+                    newTranslation = ""
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .disabled(newWord.trimmingCharacters(in: .whitespaces).isEmpty
+                       || newTranslation.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+
+            // Entry list
+            if glossary.entries.isEmpty {
+                Text("暂无术语，添加后翻译将自动应用")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            } else {
+                ScrollView(.vertical) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(glossary.entries) { entry in
+                            HStack(spacing: 6) {
+                                Text("「\(entry.word)」→「\(entry.translation)」")
+                                    .font(.caption)
+                                Spacer()
+                                Button(action: { glossary.remove(entry) }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                        .font(.caption)
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                            .padding(.vertical, 2)
+                            .padding(.horizontal, 6)
+                            .background(RoundedRectangle(cornerRadius: 4).fill(.quaternary.opacity(0.3)))
+                        }
+                    }
+                }
+                .frame(maxHeight: 120)
+            }
         }
     }
 

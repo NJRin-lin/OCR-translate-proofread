@@ -20,6 +20,7 @@ struct SentenceComponent: Identifiable, Equatable {
     let label: String
     let text: String
     let explanation: String?
+    var children: [SentenceComponent] = []
 }
 
 struct SentenceAnalysis: Identifiable, Equatable {

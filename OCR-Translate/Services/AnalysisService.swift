@@ -24,29 +24,33 @@ final class AnalysisService {
         case .proofread:
             return """
             你是一位专业的日语校对专家。用户会给你一段日文文本（OCR 识别结果，没有换行和空格）。
-            请先按句号「。」感叹号「！」问号「？」断句，然后对每个句子精准拆解语法成分。
-            你需要精确标注每个成分对应的原文片段，帮助用户核对翻译是否准确。
+            请先按句号「。」感叹号「！」问号「？」断句，然后用语法树形式逐句分析。
+
+            对每个句子按以下层级拆解：
+            1. 顶层：主语、谓语、宾语、定语、状语、补语、接续词等
+            2. 如果某个顶层成分本身是一个从句或复合结构，则用 children 进一步拆解其内部成分
 
             {
-              "sentences": [
-                {
-                  "original": "完整的原句",
-                  "components": [
-                    {"label": "主语", "text": "原文片段", "explanation": "指代/施事者说明"},
-                    {"label": "谓语", "text": "原文片段", "explanation": "时态/语态/敬体说明"},
-                    {"label": "宾语", "text": "原文片段", "explanation": "受事对象"},
-                    {"label": "定语", "text": "原文片段", "explanation": "修饰对象"},
-                    {"label": "状语", "text": "原文片段", "explanation": "时间/地点/方式"},
-                    {"label": "补语", "text": "原文片段", "explanation": "补充说明"}
-                  ]
-                }
-              ]
+              "sentences": [{
+                "original": "完整的原句",
+                "components": [
+                  {"label": "接续词", "text": "だから", "explanation": "因此"},
+                  {"label": "主语", "text": "私も", "explanation": "我也"},
+                  {"label": "谓语", "text": "がんばれるんです", "explanation": "能努力"},
+                  {"label": "状语", "text": "負けてられないなって、ますます", "explanation": "引用+程度",
+                    "children": [
+                      {"label": "引用内容", "text": "負けてられないなって", "explanation": ""}
+                    ]
+                  }
+                ]
+              }]
             }
 
             要求：
             - 按句号「。」感叹号「！」问号「？」断句，逐句分析
-            - 每一句必须包含主语和谓语，其他成分存在则标注，不存在则省略
+            - 每句必须包含主语和谓语
             - explanation 用简洁中文说明该成分在句中的作用
+            - 嵌套的成分用 children 数组表示，不需要的省略
             - 不需要语法点和词汇注解
             - 只输出 JSON，不要有任何其他文字
             """
@@ -65,8 +69,13 @@ final class AnalysisService {
                 {
                   "original": "完整的原句",
                   "components": [
-                    {"label": "主语", "text": "原文片段", "explanation": "简要说明"},
-                    {"label": "谓语", "text": "原文片段", "explanation": "简要说明"}
+                    {"label": "主语", "text": "原文片段", "explanation": "简要说明", "children": []},
+                    {"label": "状语", "text": "从句或复合成分", "explanation": "",
+                      "children": [
+                        {"label": "主语", "text": "片段", "explanation": ""},
+                        {"label": "谓语", "text": "片段", "explanation": ""}
+                      ]
+                    }
                   ],
                   "grammarPoints": ["语法格式：简要解释。例句：简短例句。"],
                   "vocabulary": [
@@ -129,15 +138,7 @@ final class AnalysisService {
             let original = sentenceJSON["original"] as? String ?? ""
 
             let componentsJSON = sentenceJSON["components"] as? [[String: Any]] ?? []
-            let components = componentsJSON.compactMap { comp -> SentenceComponent? in
-                guard let label = comp["label"] as? String,
-                      let text = comp["text"] as? String else { return nil }
-                return SentenceComponent(
-                    label: label,
-                    text: text,
-                    explanation: comp["explanation"] as? String
-                )
-            }
+            let components = componentsJSON.compactMap { parseComponent($0) }
 
             let grammarPoints = sentenceJSON["grammarPoints"] as? [String] ?? []
 
@@ -168,6 +169,19 @@ final class AnalysisService {
             mode: mode,
             sentences: sentences,
             overallNotes: json["overallNotes"] as? String
+        )
+    }
+
+    private func parseComponent(_ dict: [String: Any]) -> SentenceComponent? {
+        guard let label = dict["label"] as? String,
+              let text = dict["text"] as? String else { return nil }
+        let childrenJSON = dict["children"] as? [[String: Any]] ?? []
+        let children = childrenJSON.compactMap { parseComponent($0) }
+        return SentenceComponent(
+            label: label,
+            text: text,
+            explanation: dict["explanation"] as? String,
+            children: children
         )
     }
 }

@@ -1,18 +1,45 @@
 import SwiftUI
 
+enum InputMode: String, CaseIterable {
+    case image = "图片识别"
+    case text = "文字输入"
+}
+
 struct ContentView: View {
     @State private var selectedImage: NSImage?
     @State private var ocrResult: OCRResult?
-    @State private var translationResult: TranslationResult?
-    @State private var analysisResult: AnalysisResult?
     @State private var analysisMode: AnalysisMode = .proofread
     @State private var isProcessingOCR = false
     @State private var isProcessingAI = false
     @State private var errorMessage: String?
     @State private var showingSettings = false
     @State private var pendingImage: NSImage?
-    @State private var analysisCache: [AnalysisMode: AnalysisResult] = [:]
     @State private var lookupWord: String = ""
+    @State private var inputMode: InputMode = .image
+    @State private var manualText: String = ""
+    @State private var proofreadText: String = ""
+    @State private var referenceImage: NSImage?
+
+    // Per-mode translation/analysis state
+    @State private var imageTranslation: TranslationResult?
+    @State private var imageAnalysis: AnalysisResult?
+    @State private var imageCache: [AnalysisMode: AnalysisResult] = [:]
+    @State private var textTranslation: TranslationResult?
+    @State private var textAnalysis: AnalysisResult?
+    @State private var textCache: [AnalysisMode: AnalysisResult] = [:]
+
+    private var currentTranslation: TranslationResult? {
+        inputMode == .image ? imageTranslation : textTranslation
+    }
+    private var currentAnalysis: AnalysisResult? {
+        inputMode == .image ? imageAnalysis : textAnalysis
+    }
+    private var currentCache: [AnalysisMode: AnalysisResult] {
+        get { inputMode == .image ? imageCache : textCache }
+        nonmutating set {
+            if inputMode == .image { imageCache = newValue } else { textCache = newValue }
+        }
+    }
 
     private let ocrService = OCRService()
     private let translationService = TranslationService()
@@ -20,8 +47,17 @@ struct ContentView: View {
     private let screenshotManager = ScreenshotManager()
     private let imageLoader = ImageLoader()
     private let apiKeyStore = APIKeyStore()
+    @StateObject private var glossary = GlossaryStore()
 
     private var hasAPIKey: Bool { apiKeyStore.hasActiveKey() }
+
+    private var currentText: String {
+        let text = inputMode == .text ? manualText : (ocrResult?.fullText ?? "")
+        return text
+            .replacingOccurrences(of: "\n", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     var body: some View {
         NavigationSplitView {
@@ -54,20 +90,21 @@ struct ContentView: View {
             SettingsView(analysisMode: $analysisMode)
         }
         .onChange(of: analysisMode) { _, _ in
-            let text = cleanedOCRText
-            guard !text.isEmpty else { return }
-            if let cached = analysisCache[analysisMode] {
-                analysisResult = cached
+            guard !currentText.isEmpty else { return }
+            if let cached = currentCache[analysisMode] {
+                applyAnalysis(cached)
                 return
             }
             Task {
                 isProcessingAI = true
-                if translationResult == nil {
-                    // No translation yet — run full pipeline
-                    await performTranslationAndAnalysis()
-                } else if let result = try? await analysisService.analyze(text: text, mode: analysisMode) {
-                    analysisResult = result
-                    analysisCache[analysisMode] = result
+                if currentTranslation == nil {
+                    if inputMode == .text {
+                        await performTextTranslation()
+                    } else {
+                        await performTranslationAndAnalysis()
+                    }
+                } else if let result = try? await analysisService.analyze(text: currentText, mode: analysisMode) {
+                    applyAnalysis(result)
                 }
                 isProcessingAI = false
             }
@@ -77,8 +114,21 @@ struct ContentView: View {
     // MARK: - Sidebar (Image)
 
     private var sidebarView: some View {
-        VStack {
-            if let image = selectedImage {
+        VStack(spacing: 0) {
+            Picker("", selection: $inputMode) {
+                ForEach(InputMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+
+            Divider()
+
+            if inputMode == .text {
+                manualTextInputView
+            } else if let image = selectedImage {
                 CroppableImageView(image: image, onConfirm: { cropped in
                     pendingImage = cropped
                     Task { await performOCR() }
@@ -115,11 +165,104 @@ struct ContentView: View {
         .navigationSplitViewColumnWidth(min: 280, ideal: 350, max: 500)
     }
 
+    // MARK: - Manual text input
+
+    private var manualTextInputView: some View {
+        VStack(spacing: 0) {
+            // 翻译栏
+            VStack(alignment: .leading, spacing: 4) {
+                Text("翻译栏")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                TextEditor(text: $manualText)
+                    .font(.body)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(.quaternary, lineWidth: 0.5)
+                    )
+                    .padding(.horizontal, 12)
+            }
+            .padding(.top, 8)
+
+            Divider().padding(.vertical, 8)
+
+            // 校对栏
+            VStack(alignment: .leading, spacing: 4) {
+                Text("校对栏")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                TextEditor(text: $proofreadText)
+                    .font(.body)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(.quaternary, lineWidth: 0.5)
+                    )
+                    .padding(.horizontal, 12)
+            }
+
+            // Bottom buttons
+            HStack {
+                Button(action: {
+                    manualText = ""
+                    proofreadText = ""
+                    resetResults()
+                }) {
+                    Label("清空", systemImage: "trash")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(manualText.isEmpty && proofreadText.isEmpty)
+
+                Spacer()
+
+                Button(action: {
+                    Task {
+                        resetResults()
+                        await performTextTranslation()
+                    }
+                }) {
+                    Label("开始翻译分析", systemImage: "sparkles")
+                        .frame(width: 140)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(manualText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessingAI)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+        }
+    }
+
     // MARK: - Content (OCR Result)
 
     private var ocrContentView: some View {
         Group {
-            if isProcessingOCR {
+            if inputMode == .text {
+                // Text mode content
+                VStack {
+                    if let ref = referenceImage {
+                        ZoomableImageView(image: ref)
+                    } else {
+                        VStack(spacing: 20) {
+                            Image(systemName: "doc.text.image")
+                                .font(.system(size: 36))
+                                .foregroundStyle(.secondary)
+                            Text("上传对照图片")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                            Button(action: uploadReferenceImage) {
+                                Label("选择图片", systemImage: "photo.badge.plus")
+                                    .frame(width: 140)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+            } else if isProcessingOCR {
                 ProgressView("正在识别文字...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error = errorMessage {
@@ -150,19 +293,19 @@ struct ContentView: View {
 
     private var translationDetailView: some View {
         Group {
-            if let translation = translationResult {
+            if let translation = currentTranslation {
                 VStack(spacing: 0) {
                     VocabularyLookupView(externalQuery: $lookupWord)
 
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            TranslationResultView(result: translation, originalText: ocrResult?.fullText ?? "")
+                            TranslationResultView(result: translation, originalText: currentText)
 
-                            if analysisResult != nil {
+                            if currentAnalysis != nil {
                                 Divider()
                             }
 
-                            AnalysisView(result: analysisResult)
+                            AnalysisView(result: currentAnalysis)
                         }
                         .padding()
                     }
@@ -205,6 +348,16 @@ struct ContentView: View {
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                     }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if inputMode == .text, !manualText.isEmpty, !isProcessingAI {
+                VStack(spacing: 20) {
+                    Image(systemName: "text.bubble")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.secondary)
+                    Text("文字已输入，点击侧栏按钮开始翻译")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if isProcessingOCR {
@@ -253,13 +406,6 @@ struct ContentView: View {
         }
     }
 
-    private var cleanedOCRText: String {
-        (ocrResult?.fullText ?? "")
-            .replacingOccurrences(of: "\n", with: "")
-            .replacingOccurrences(of: " ", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     // MARK: - Actions
 
     private func takeScreenshot() {
@@ -285,11 +431,17 @@ struct ContentView: View {
 
     private func resetResults() {
         ocrResult = nil
-        translationResult = nil
-        analysisResult = nil
+        imageTranslation = nil; imageAnalysis = nil; imageCache = [:]
+        textTranslation = nil; textAnalysis = nil; textCache = [:]
         errorMessage = nil
         pendingImage = nil
-        analysisCache = [:]
+    }
+
+    // MARK: - Helpers
+
+    private func applyAnalysis(_ result: AnalysisResult) {
+        if inputMode == .image { imageAnalysis = result; imageCache[analysisMode] = result }
+        else { textAnalysis = result; textCache[analysisMode] = result }
     }
 
     // MARK: - OCR (local, no API needed)
@@ -299,8 +451,7 @@ struct ContentView: View {
 
         isProcessingOCR = true
         errorMessage = nil
-        translationResult = nil
-        analysisResult = nil
+        imageTranslation = nil; imageAnalysis = nil; imageCache = [:]
 
         do {
             let ocr = try await ocrService.recognize(image)
@@ -318,6 +469,37 @@ struct ContentView: View {
         isProcessingOCR = false
     }
 
+    private func uploadReferenceImage() {
+        Task {
+            if let img = await imageLoader.loadFromFile() {
+                referenceImage = img
+            }
+        }
+    }
+
+    // MARK: - Manual text translation (skips OCR)
+
+    private func performTextTranslation() async {
+        let text = manualText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+
+        isProcessingAI = true
+
+        do {
+            async let translation = translationService.translate(text: text, glossary: glossary.buildPromptSnippet())
+            async let analysis = analysisService.analyze(text: currentText, mode: analysisMode)
+
+            let (trans, anal) = try await (translation, analysis)
+            textTranslation = trans
+            textAnalysis = anal
+            textCache[analysisMode] = anal
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isProcessingAI = false
+    }
+
     // MARK: - Translation + Analysis (needs API key)
 
     private func performTranslationAndAnalysis() async {
@@ -326,13 +508,13 @@ struct ContentView: View {
         isProcessingAI = true
 
         do {
-            async let translation = translationService.translate(text: ocr.fullText)
-            async let analysis = analysisService.analyze(text: cleanedOCRText, mode: analysisMode)
+            async let translation = translationService.translate(text: ocr.fullText, glossary: glossary.buildPromptSnippet())
+            async let analysis = analysisService.analyze(text: currentText, mode: analysisMode)
 
             let (trans, anal) = try await (translation, analysis)
-            translationResult = trans
-            analysisResult = anal
-            analysisCache[analysisMode] = anal
+            imageTranslation = trans
+            imageAnalysis = anal
+            imageCache[analysisMode] = anal
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -7,7 +7,6 @@ struct VocabularyLookupView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var isExpanded = true
-    @State private var notesExpanded = false
 
     private let service = VocabularyService()
     @FocusState private var isFocused: Bool
@@ -72,18 +71,12 @@ struct VocabularyLookupView: View {
                     .padding(.horizontal, 12)
                     .padding(.top, 2)
             }
-        }
-        .overlay(alignment: .top) {
+
             if let entry = result, isExpanded {
-                VStack {
-                    Spacer().frame(height: 40)
-                    vocabCard(entry)
-                        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-                        .padding(.horizontal, 4)
-                }
+                vocabCard(entry)
+                    .padding(.top, 4)
             }
         }
-        .zIndex(2)
         .onChange(of: externalQuery) { _, newValue in
             guard !newValue.isEmpty else { return }
             query = newValue
@@ -137,22 +130,10 @@ struct VocabularyLookupView: View {
                 .textSelection(.enabled)
 
             if let notes = entry.notes {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(notes)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .textSelection(.enabled)
-                        .lineLimit(notesExpanded ? nil : 2)
-
-                    if notes.count >= 60 {
-                        Button(action: { notesExpanded.toggle() }) {
-                            Text(notesExpanded ? "收起" : "展开全部")
-                                .font(.caption)
-                                .foregroundStyle(.blue)
-                        }
-                        .buttonStyle(.borderless)
-                    }
-                }
+                Text(notes)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
             }
 
             if !entry.examples.isEmpty {
@@ -187,7 +168,6 @@ struct VocabularyLookupView: View {
         errorMessage = nil
         result = nil
         isExpanded = true
-        notesExpanded = false
 
         Task {
             do {
