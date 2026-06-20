@@ -13,21 +13,21 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="🔍" FontSize="11" VerticalAlignment="Center"
+                <TextBlock Grid.Column="0" Text="🔍" FontSize="15" VerticalAlignment="Center"
                            Margin="0,0,6,0" />
 
-                <TextBox x:Name="SearchBox" Grid.Column="1" FontSize="11"
+                <TextBox x:Name="SearchBox" Grid.Column="1" FontSize="15"
                          VerticalAlignment="Center" KeyDown="SearchBox_KeyDown" />
 
                 <!-- Clear button -->
                 <Button x:Name="ClearBtn" Grid.Column="2" Content="✕" Width="20" Height="20"
-                        FontSize="10" Padding="0"
+                        FontSize="14" Padding="0"
                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                         Click="ClearBtn_Click" Visibility="Collapsed" />
 
                 <!-- Search button -->
                 <Button x:Name="SearchBtn" Grid.Column="3" Content="🔍 查询" Padding="8,3"
-                        FontSize="11" Margin="4,0"
+                        FontSize="15" Margin="4,0"
                         Click="SearchBtn_Click" />
 
                 <!-- Loading indicator -->
@@ -37,14 +37,14 @@
 
                 <!-- Toggle expand -->
                 <Button x:Name="ToggleBtn" Grid.Column="4" Content="收起"
-                        Width="44" Padding="4,3" FontSize="11"
+                        Width="44" Padding="4,3" FontSize="15"
                         Margin="4,0,0,0"
                         Click="ToggleBtn_Click" Visibility="Collapsed" />
             </Grid>
         </Border>
 
         <!-- Loading/Error -->
-        <TextBlock x:Name="ErrorText" FontSize="10" Foreground="Red"
+        <TextBlock x:Name="ErrorText" FontSize="14" Foreground="Red"
                    Margin="12,2,0,0" Visibility="Collapsed" />
 
         <!-- Result card -->

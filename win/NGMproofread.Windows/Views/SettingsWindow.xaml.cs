@@ -8,16 +8,18 @@ namespace NGMproofread.Windows.Views;
 
 public partial class SettingsWindow : Window
 {
-    private readonly APIKeyStore _store = new();
+    private readonly APIKeyStore _store;
     private readonly GlossaryStore _glossary;
-    private AIProvider _selectedProvider = AIProvider.DeepSeek;
+    private AIProvider _selectedProvider;
     private bool _showKey;
+    private string _currentKey = "";
 
     public AnalysisMode AnalysisMode { get; private set; } = AnalysisMode.Study;
 
-    public SettingsWindow(GlossaryStore glossary)
+    public SettingsWindow(APIKeyStore apiKeyStore, GlossaryStore glossary)
     {
         InitializeComponent();
+        _store = apiKeyStore;
         _glossary = glossary;
         _selectedProvider = _store.ActiveProvider;
 
@@ -30,9 +32,11 @@ public partial class SettingsWindow : Window
         }
 
         // Restore analysis mode (from settings or default)
-        // Could be persisted separately; for now default to Study
+        if (_store.DefaultAnalysisMode == AnalysisMode.Proofread)
+            ProofreadModeRadio.IsChecked = true;
+        else
+            StudyModeRadio.IsChecked = true;
 
-        LoadAPIKey();
         UpdateProviderUI();
         LoadGlossary();
 
@@ -51,39 +55,50 @@ public partial class SettingsWindow : Window
     private void OnProviderChanged()
     {
         _store.ActiveProvider = _selectedProvider;
-        LoadAPIKey();
         UpdateProviderUI();
     }
 
     private void UpdateProviderUI()
     {
         APIKeyLabel.Text = $"{_selectedProvider.ShortName()} API Key";
-        APIKeyBox.Text = ""; // placeholder will show
-        SaveStatusText.Text = "";
-    }
-
-    private void LoadAPIKey()
-    {
+        _currentKey = _store.Read(_selectedProvider) ?? "";
         _showKey = false;
-        var key = _store.Read(_selectedProvider);
-        APIKeyBox.Text = key ?? "";
+        APIKeyBox.Text = string.IsNullOrEmpty(_currentKey) ? "" : new string('•', _currentKey.Length);
+        SaveStatusText.Text = "";
     }
 
     private void ToggleKeyVisibilityBtn_Click(object sender, RoutedEventArgs e)
     {
         _showKey = !_showKey;
-        // In WPF, password visibility is handled by PasswordBox vs TextBox
-        // For simplicity, this is a TextBox with font; a proper impl would use PasswordBox
+        if (_showKey)
+        {
+            APIKeyBox.Text = _currentKey;
+        }
+        else
+        {
+            _currentKey = APIKeyBox.Text;
+            APIKeyBox.Text = string.IsNullOrEmpty(_currentKey) ? "" : new string('•', _currentKey.Length);
+        }
     }
 
     private void SaveKeyBtn_Click(object sender, RoutedEventArgs e)
     {
-        var key = APIKeyBox.Text.Trim();
+        var key = (_showKey ? APIKeyBox.Text : _currentKey).Trim();
         if (string.IsNullOrEmpty(key)) return;
+        _currentKey = key;
 
-        _store.Save(key, _selectedProvider);
-        SaveStatusText.Text = $"{_selectedProvider.ShortName()} 已保存";
-        SaveStatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x34, 0xC7, 0x59));
+        try
+        {
+            _store.Save(key, _selectedProvider);
+            SaveStatusText.Text = $"{_selectedProvider.ShortName()} 已保存";
+            SaveStatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x34, 0xC7, 0x59));
+        }
+        catch (Exception ex)
+        {
+            SaveStatusText.Text = $"保存失败: {ex.Message}";
+            SaveStatusText.Foreground = new SolidColorBrush(Colors.Red);
+            return;
+        }
 
         // Auto-dismiss after 2 seconds
         _ = Task.Run(async () =>
@@ -149,8 +164,8 @@ public partial class SettingsWindow : Window
 
     private void DoneBtn_Click(object sender, RoutedEventArgs e)
     {
-        // Save analysis mode preference
         AnalysisMode = StudyModeRadio.IsChecked == true ? AnalysisMode.Study : AnalysisMode.Proofread;
+        _store.DefaultAnalysisMode = AnalysisMode;
         Close();
     }
 }

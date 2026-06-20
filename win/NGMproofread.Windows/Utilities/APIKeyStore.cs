@@ -7,6 +7,9 @@ namespace NGMproofread.Windows.Utilities;
 public class APIKeyStore
 {
     private const string ActiveProviderKey = "activeProvider";
+    private const string AnalysisModeKey = "defaultAnalysisMode";
+    private const string SidebarWidthKey = "layout_sidebarWidth";
+    private const string ContentWidthKey = "layout_contentWidth";
     private const string DeepSeekKey = "apiKey_deepseek";
     private const string OpenAIKey = "apiKey_openai";
     private const string GeminiKey = "apiKey_gemini";
@@ -76,6 +79,34 @@ public class APIKeyStore
         Save();
     }
 
+    public AnalysisMode DefaultAnalysisMode
+    {
+        get
+        {
+            if (_cache.TryGetValue(AnalysisModeKey, out var val) &&
+                Enum.TryParse<AnalysisMode>(val, out var mode))
+                return mode;
+            return AnalysisMode.Study;
+        }
+        set
+        {
+            _cache[AnalysisModeKey] = value.ToString();
+            Save();
+        }
+    }
+
+    public double SidebarWidth
+    {
+        get => _cache.TryGetValue(SidebarWidthKey, out var v) && double.TryParse(v, out var d) ? d : 350;
+        set { _cache[SidebarWidthKey] = value.ToString("F0"); Save(); }
+    }
+
+    public double ContentWidth
+    {
+        get => _cache.TryGetValue(ContentWidthKey, out var v) && double.TryParse(v, out var d) ? d : 350;
+        set { _cache[ContentWidthKey] = value.ToString("F0"); Save(); }
+    }
+
     public bool HasActiveKey()
     {
         return !string.IsNullOrEmpty(Read(ActiveProvider));
@@ -98,13 +129,9 @@ public class APIKeyStore
 
     private void Save()
     {
-        try
-        {
-            var dir = Path.GetDirectoryName(SettingsPath)!;
-            Directory.CreateDirectory(dir);
-            var json = JsonSerializer.Serialize(_cache);
-            File.WriteAllText(SettingsPath, json);
-        }
-        catch { }
+        var dir = Path.GetDirectoryName(SettingsPath)!;
+        Directory.CreateDirectory(dir);
+        var json = JsonSerializer.Serialize(_cache);
+        File.WriteAllText(SettingsPath, json);
     }
 }

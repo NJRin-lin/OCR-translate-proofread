@@ -53,24 +53,30 @@ public partial class AnalysisView : UserControl
                 Margin = new Thickness(0, 12, 0, 0)
             };
 
-            var stack = new StackPanel { Orientation = Orientation.Horizontal };
-            stack.Children.Add(new TextBlock
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var icon = new TextBlock
             {
-                Text = "💡", FontSize = 11,
+                Text = "💡", FontSize = 15,
                 Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xCC, 0x00)),
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(0, 0, 6, 0)
-            });
+            };
+            Grid.SetColumn(icon, 0);
+            grid.Children.Add(icon);
 
             var tb = new TextBlock
             {
                 Text = _result.OverallNotes,
-                FontSize = 13,
+                FontSize = 15,
                 Foreground = new SolidColorBrush(Colors.Gray),
                 TextWrapping = TextWrapping.Wrap
             };
-            stack.Children.Add(tb);
-            notesPanel.Child = stack;
+            Grid.SetColumn(tb, 1);
+            grid.Children.Add(tb);
+            notesPanel.Child = grid;
 
             SentenceCards.Items.Add(notesPanel);
         }
@@ -80,13 +86,16 @@ public partial class AnalysisView : UserControl
     {
         var stack = new StackPanel();
 
-        // Original sentence
-        var origBlock = new TextBlock
+        // Original sentence (read-only TextBox for copy support)
+        var origBlock = new TextBox
         {
             Text = sentence.OriginalSentence,
             FontSize = 14, FontWeight = FontWeights.Bold,
             FontFamily = new FontFamily("Meiryo, MS Gothic, Yu Gothic"),
             TextWrapping = TextWrapping.Wrap,
+            IsReadOnly = true,
+            BorderThickness = new Thickness(0),
+            Background = Brushes.Transparent,
             Margin = new Thickness(14, 10, 14, 0)
         };
         stack.Children.Add(origBlock);
@@ -98,7 +107,7 @@ public partial class AnalysisView : UserControl
 
             var compHeader = new TextBlock
             {
-                Text = "句子成分", FontSize = 11,
+                Text = "句子成分", FontSize = 15,
                 Foreground = new SolidColorBrush(Colors.Gray),
                 Margin = new Thickness(14, 8, 14, 6)
             };
@@ -109,7 +118,7 @@ public partial class AnalysisView : UserControl
             var treeBox = new TextBlock
             {
                 Text = treeText,
-                FontSize = 11,
+                FontSize = 15,
                 FontFamily = new FontFamily("Consolas, Cascadia Code, monospace"),
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(14, 0, 14, 8),
@@ -126,7 +135,7 @@ public partial class AnalysisView : UserControl
 
             var gramHeader = new TextBlock
             {
-                Text = "语法要点", FontSize = 11,
+                Text = "语法要点", FontSize = 15,
                 Foreground = new SolidColorBrush(Colors.Gray),
                 Margin = new Thickness(14, 8, 14, 4)
             };
@@ -137,12 +146,12 @@ public partial class AnalysisView : UserControl
                 var gpStack = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(14, 0, 14, 2) };
                 gpStack.Children.Add(new TextBlock
                 {
-                    Text = "·", FontSize = 13,
+                    Text = "·", FontSize = 15,
                     Foreground = new SolidColorBrush(Color.FromRgb(0xAF, 0x52, 0xDE))
                 });
                 gpStack.Children.Add(new TextBlock
                 {
-                    Text = point, FontSize = 13,
+                    Text = point, FontSize = 15,
                     TextWrapping = TextWrapping.Wrap,
                     Margin = new Thickness(6, 0, 0, 0)
                 });
@@ -160,7 +169,7 @@ public partial class AnalysisView : UserControl
 
                 var vocabHeader = new TextBlock
                 {
-                    Text = "词汇注解", FontSize = 11,
+                    Text = "词汇注解", FontSize = 15,
                     Foreground = new SolidColorBrush(Colors.Gray),
                     Margin = new Thickness(14, 8, 14, 4)
                 };
@@ -173,18 +182,18 @@ public partial class AnalysisView : UserControl
                     var headStack = new StackPanel { Orientation = Orientation.Horizontal };
                     headStack.Children.Add(new TextBlock
                     {
-                        Text = word.Word, FontSize = 13, FontWeight = FontWeights.Bold,
+                        Text = word.Word, FontSize = 15, FontWeight = FontWeights.Bold,
                         FontFamily = new FontFamily("Yu Mincho, MS Mincho, serif")
                     });
                     headStack.Children.Add(new TextBlock
                     {
-                        Text = $" ({word.Reading})", FontSize = 11,
+                        Text = $" ({word.Reading})", FontSize = 15,
                         Foreground = new SolidColorBrush(Colors.Gray),
                         VerticalAlignment = VerticalAlignment.Center
                     });
                     headStack.Children.Add(new TextBlock
                     {
-                        Text = $" {word.Meaning}", FontSize = 13,
+                        Text = $" {word.Meaning}", FontSize = 15,
                         VerticalAlignment = VerticalAlignment.Center
                     });
 
@@ -200,7 +209,7 @@ public partial class AnalysisView : UserControl
                         };
                         posTag.Child = new TextBlock
                         {
-                            Text = word.PartOfSpeech, FontSize = 10,
+                            Text = word.PartOfSpeech, FontSize = 12,
                             Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0x7A, 0xFF))
                         };
                         headStack.Children.Add(posTag);
@@ -217,7 +226,7 @@ public partial class AnalysisView : UserControl
                         };
                         levelTag.Child = new TextBlock
                         {
-                            Text = word.JlptLevel, FontSize = 10,
+                            Text = word.JlptLevel, FontSize = 12,
                             Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x95, 0x00))
                         };
                         headStack.Children.Add(levelTag);
@@ -229,7 +238,7 @@ public partial class AnalysisView : UserControl
                     {
                         wordStack.Children.Add(new TextBlock
                         {
-                            Text = word.Notes, FontSize = 11,
+                            Text = word.Notes, FontSize = 15,
                             Foreground = new SolidColorBrush(Colors.Gray),
                             Margin = new Thickness(0, 2, 0, 0)
                         });

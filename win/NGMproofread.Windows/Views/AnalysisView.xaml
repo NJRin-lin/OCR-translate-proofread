@@ -13,7 +13,7 @@
             <!-- Mode badge -->
             <Border x:Name="ModeBadge" Grid.Column="2" CornerRadius="10"
                     Padding="8,3" Background="#0D000000">
-                <TextBlock x:Name="ModeBadgeText" FontSize="11" Foreground="Gray" />
+                <TextBlock x:Name="ModeBadgeText" FontSize="15" Foreground="Gray" />
             </Border>
         </Grid>
 

@@ -16,7 +16,9 @@ public class VocabEntry
 
 public class VocabularyService
 {
-    private readonly AIService _ai = new();
+    private readonly AIService _ai;
+
+    public VocabularyService(AIService ai) { _ai = ai; }
     private readonly Dictionary<string, VocabEntry> _cache = new();
 
     public async Task<VocabEntry> LookupAsync(string word)

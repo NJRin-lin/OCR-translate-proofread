@@ -5,6 +5,7 @@
         Title="NGM proofread"
         MinWidth="1000" MinHeight="650"
         Width="1200" Height="750"
+        FontSize="14"
         Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
 
     <Window.Resources>
@@ -51,9 +52,6 @@
 
                 <!-- Toolbar buttons -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="ScreenshotBtn" Content="📷 截图" Margin="0,0,6,0"
-                            Padding="10,5" ToolTip="截图识别 (Ctrl+Shift+S)"
-                            Click="ScreenshotBtn_Click" />
                     <Button x:Name="UploadBtn" Content="🖼 上传图片" Margin="0,0,6,0"
                             Padding="10,5" ToolTip="上传图片文件"
                             Click="UploadBtn_Click" />
@@ -66,11 +64,11 @@
         <!-- Three-column layout -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="350" MinWidth="280" MaxWidth="500" />
+                <ColumnDefinition x:Name="SidebarColumn" Width="350" MinWidth="200" />
                 <ColumnDefinition Width="4" />
-                <ColumnDefinition Width="350" MinWidth="250" MaxWidth="500" />
+                <ColumnDefinition x:Name="ContentColumn" Width="350" MinWidth="200" />
                 <ColumnDefinition Width="4" />
-                <ColumnDefinition Width="*" MinWidth="350" />
+                <ColumnDefinition Width="*" MinWidth="250" />
             </Grid.ColumnDefinitions>
 
             <!-- Sidebar -->
@@ -105,11 +103,13 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="翻译栏" FontSize="11"
+                        <TextBlock Grid.Row="0" Text="翻译栏" FontSize="15"
                                    Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                                    Margin="12,8,0,4" />
                         <TextBox x:Name="TranslationTextEditor" Grid.Row="1"
@@ -117,25 +117,33 @@
                                  Margin="12,0" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
                                  BorderThickness="0.5" FontSize="14"
                                  VerticalScrollBarVisibility="Auto" />
+                        <Button Grid.Row="2" Content="清空翻译栏"
+                                Padding="6,3" Margin="12,4,12,0"
+                                HorizontalAlignment="Right" FontSize="13"
+                                Click="ClearTranslationBtn_Click" />
 
-                        <TextBlock Grid.Row="2" Text="校对栏" FontSize="11"
+                        <TextBlock Grid.Row="3" Text="校对栏" FontSize="15"
                                    Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                                    Margin="12,8,0,4" />
-                        <TextBox x:Name="ProofreadTextEditor" Grid.Row="3"
+                        <TextBox x:Name="ProofreadTextEditor" Grid.Row="4"
                                  AcceptsReturn="True" TextWrapping="Wrap"
                                  Margin="12,0" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
                                  BorderThickness="0.5" FontSize="14"
                                  VerticalScrollBarVisibility="Auto" />
+                        <Button Grid.Row="5" Content="清空校对栏"
+                                Padding="6,3" Margin="12,4,12,0"
+                                HorizontalAlignment="Right" FontSize="13"
+                                Click="ClearProofreadBtn_Click" />
 
-                        <Grid Grid.Row="4" Margin="12,8">
+                        <Grid Grid.Row="6" Margin="12,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="🗑 清空"
+                            <Button Grid.Column="0" Content="清空全部"
                                     Padding="8,4" Click="ClearTextBtn_Click"
-                                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" />
+                                    Foreground="Red" FontSize="13" />
                             <Button Grid.Column="2" Content="✨ 开始翻译分析"
                                     Width="140" Padding="16,8"
                                     Click="StartTextTranslationBtn_Click"
@@ -146,71 +154,111 @@
             </Border>
 
             <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
-                          Background="Transparent" />
+                          ResizeDirection="Columns" Background="Transparent" />
 
             <!-- Content column -->
             <Border Grid.Column="2">
                 <Grid>
-                    <!-- Image mode: OCR result / loading / error / empty -->
-                    <Border x:Name="OCRContentPanel" Visibility="Visible">
-                        <Grid>
-                            <views:OCRResultView x:Name="OCRResultViewCtrl" Visibility="Collapsed" />
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                            <views:ZoomableImageView x:Name="ReferenceImageView" Visibility="Collapsed" />
+                    <Grid Grid.Row="0">
+                        <!-- Image mode: OCR result / loading / error / empty -->
+                        <Border x:Name="OCRContentPanel" Visibility="Visible">
+                            <Grid>
+                                <views:OCRResultView x:Name="OCRResultViewCtrl" Visibility="Collapsed" />
 
-                            <!-- Loading -->
-                            <Grid x:Name="OCRLoadingPanel" Visibility="Collapsed">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <ProgressBar IsIndeterminate="True" Width="120" Height="16" />
-                                    <TextBlock Text="正在识别文字..." HorizontalAlignment="Center"
-                                               Margin="0,8,0,0" FontSize="13" />
-                                </StackPanel>
+                                <views:ZoomableImageView x:Name="ReferenceImageView" Visibility="Collapsed" />
+
+                                <!-- Loading -->
+                                <Grid x:Name="OCRLoadingPanel" Visibility="Collapsed">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <ProgressBar IsIndeterminate="True" Width="120" Height="16" />
+                                        <TextBlock Text="正在识别文字..." HorizontalAlignment="Center"
+                                                   Margin="0,8,0,0" FontSize="15" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Error -->
+                                <Grid x:Name="OCRErrorPanel" Visibility="Collapsed">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="⚠" FontSize="36" Foreground="Orange"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="OCRErrorText" Text=""
+                                                   Foreground="Gray" HorizontalAlignment="Center"
+                                                   Margin="0,8,0,12" />
+                                        <Button Content="重试" Width="100" HorizontalAlignment="Center"
+                                                Click="RetryOCRBtn_Click" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Empty state -->
+                                <TextBlock x:Name="OCREmptyText" Text="等待图片..."
+                                           Foreground="Gray" FontSize="14"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Grid>
+                        </Border>
 
-                            <!-- Error -->
-                            <Grid x:Name="OCRErrorPanel" Visibility="Collapsed">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="⚠" FontSize="36" Foreground="Orange"
-                                               HorizontalAlignment="Center" />
-                                    <TextBlock x:Name="OCRErrorText" Text=""
-                                               Foreground="Gray" HorizontalAlignment="Center"
-                                               Margin="0,8,0,12" />
-                                    <Button Content="重试" Width="100" HorizontalAlignment="Center"
-                                            Click="RetryOCRBtn_Click" />
+                        <!-- Text mode: reference image area -->
+                        <Grid x:Name="TextModeRefPanel" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" Padding="12,8" Background="#80F0F0F0">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="🖼 上传参考图片" Padding="10,5"
+                                            Click="UploadRefImageBtn_Click" />
                                 </StackPanel>
-                            </Grid>
+                            </Border>
 
-                            <!-- Empty state -->
-                            <TextBlock x:Name="OCREmptyText" Text="等待图片..."
-                                       Foreground="Gray" FontSize="14"
+                            <views:ZoomableImageView x:Name="TextRefImageView" Grid.Row="1" />
+
+                            <!-- Empty state when no ref image -->
+                            <TextBlock x:Name="TextRefEmptyHint" Grid.Row="1"
+                                       Text="上传对照图片（可选）" Foreground="Gray" FontSize="14"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Grid>
+                    </Grid>
+
+                    <!-- Windows OCR model warning (fixed at bottom) -->
+                    <Border x:Name="OCRWarningBar" Grid.Row="1" Padding="10,6"
+                            Background="#1A007AFF" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="ℹ" FontSize="15" Foreground="#007AFF"
+                                       VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBlock Text="受 Windows 环境的识别模型影响，建议手动检查识别结果"
+                                       FontSize="15" Foreground="Gray" TextWrapping="Wrap" />
+                        </StackPanel>
                     </Border>
                 </Grid>
             </Border>
 
             <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch"
-                          Background="Transparent" />
+                          ResizeDirection="Columns" Background="Transparent" />
 
             <!-- Detail column -->
-            <ScrollViewer Grid.Column="4" VerticalScrollBarVisibility="Auto">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+            <Grid Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                    <!-- Vocabulary lookup -->
-                    <views:VocabularyLookupView x:Name="VocabLookupView" Grid.Row="0" />
+                <!-- Vocabulary lookup (sticky at top) -->
+                <views:VocabularyLookupView x:Name="VocabLookupView" Grid.Row="0" />
 
-                    <!-- Results: translation + analysis -->
-                    <StackPanel Grid.Row="1" Margin="16,8">
+                <!-- Results: translation + analysis (scrollable) -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16,8">
                         <!-- Translation loading -->
                         <Grid x:Name="TranslationLoadingPanel" Visibility="Collapsed">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <ProgressBar IsIndeterminate="True" Width="120" Height="16" />
                                 <TextBlock Text="正在翻译和分析..." HorizontalAlignment="Center"
-                                           Margin="0,8,0,0" FontSize="13" />
+                                           Margin="0,8,0,0" FontSize="15" />
                             </StackPanel>
                         </Grid>
 
@@ -218,16 +266,16 @@
                         <Grid x:Name="OCRWaitingPanel" Visibility="Collapsed">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="💬" FontSize="36" HorizontalAlignment="Center" />
-                                <TextBlock x:Name="OCRStatsText" FontSize="13"
+                                <TextBlock x:Name="OCRStatsText" FontSize="15"
                                            HorizontalAlignment="Center" Margin="0,8,0,0" />
-                                <TextBlock x:Name="OCRConfidenceText" FontSize="11"
+                                <TextBlock x:Name="OCRConfidenceText" FontSize="15"
                                            Foreground="Gray" HorizontalAlignment="Center" Margin="0,4,0,16" />
                                 <Button x:Name="StartTranslationBtn" Content="✨ 开始翻译分析"
                                         Width="180" Padding="16,8" FontWeight="Bold"
                                         HorizontalAlignment="Center"
                                         Click="StartTranslationBtn_Click" />
                                 <TextBlock x:Name="NoAPIKeyHint" Text="配置 API Key 后可翻译分析"
-                                           FontSize="12" Foreground="Gray"
+                                           FontSize="14" Foreground="Gray"
                                            HorizontalAlignment="Center" Margin="0,8,0,0" Visibility="Collapsed" />
                                 <Button x:Name="ConfigAPIKeyBtn" Content="🔑 配置 API Key"
                                         Width="180" Padding="12,6"
@@ -240,9 +288,13 @@
                         <Grid x:Name="TextWaitingPanel" Visibility="Collapsed">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="💬" FontSize="36" HorizontalAlignment="Center" />
-                                <TextBlock Text="文字已输入，点击侧栏按钮开始翻译"
-                                           FontSize="13" Foreground="Gray"
-                                           HorizontalAlignment="Center" Margin="0,8,0,0" />
+                                <TextBlock Text="文字已输入，点击开始翻译"
+                                           FontSize="15" Foreground="Gray"
+                                           HorizontalAlignment="Center" Margin="0,8,0,16" />
+                                <Button Content="✨ 开始翻译分析"
+                                        Width="180" Padding="16,8" FontWeight="Bold"
+                                        HorizontalAlignment="Center"
+                                        Click="StartTextTranslationBtn_Click" />
                             </StackPanel>
                         </Grid>
 
@@ -250,7 +302,7 @@
                         <Grid x:Name="DetailWaitingOCRPanel" Visibility="Collapsed">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <ProgressBar IsIndeterminate="True" Width="80" Height="12" />
-                                <TextBlock Text="等待识别完成..." FontSize="11"
+                                <TextBlock Text="等待识别完成..." FontSize="15"
                                            Foreground="Gray" HorizontalAlignment="Center"
                                            Margin="0,8,0,0" />
                             </StackPanel>
@@ -280,8 +332,8 @@
                             </StackPanel>
                         </Grid>
                     </StackPanel>
-                </Grid>
-            </ScrollViewer>
+                </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

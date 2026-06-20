@@ -17,18 +17,18 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <!-- TTS button (shown in continuous mode) -->
                     <Button x:Name="TTSButton" Content="▶ 朗读" Padding="6,3"
-                            FontSize="11" Margin="0,0,6,0"
+                            FontSize="15" Margin="0,0,6,0"
                             Click="TTSButton_Click" Visibility="Collapsed" />
 
                     <!-- Toggle segment/continuous -->
                     <Button x:Name="ViewToggleBtn" Content="连贯" Padding="6,3"
-                            FontSize="11" Click="ViewToggleBtn_Click" />
+                            FontSize="15" Click="ViewToggleBtn_Click" />
 
                     <!-- Confidence badge -->
                     <Border x:Name="ConfidenceBadge" CornerRadius="10"
                             Padding="8,3" Margin="8,0,0,0"
                             Background="#1A34C759" VerticalAlignment="Center">
-                        <TextBlock x:Name="ConfidenceBadgeText" FontSize="11"
+                        <TextBlock x:Name="ConfidenceBadgeText" FontSize="15"
                                    Foreground="Gray" />
                     </Border>
                 </StackPanel>
@@ -58,7 +58,7 @@
                                 <TextBlock Grid.Column="0" Text="{Binding Text}"
                                            FontSize="14" TextWrapping="Wrap" />
                                 <TextBlock Grid.Column="1" Text="{Binding ConfidenceDisplay}"
-                                           FontSize="10" Margin="6,0,0,0"
+                                           FontSize="14" Margin="6,0,0,0"
                                            VerticalAlignment="Top"
                                            Foreground="{Binding ConfidenceBrush}" />
                             </Grid>
@@ -74,12 +74,13 @@
                     CornerRadius="4"
                     Background="#26FFCC00">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="⚠" FontSize="11" Foreground="#FFCC00"
+                    <TextBlock Text="⚠" FontSize="15" Foreground="#FFCC00"
                                VerticalAlignment="Center" Margin="0,0,4,0" />
                     <TextBlock Text="黄色标记部分置信度较低，请核对"
-                               FontSize="11" Foreground="Gray" />
+                               FontSize="15" Foreground="Gray" />
                 </StackPanel>
             </Border>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

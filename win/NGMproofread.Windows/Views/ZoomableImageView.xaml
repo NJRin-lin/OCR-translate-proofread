@@ -32,7 +32,7 @@
                         Click="ZoomOutBtn_Click" ToolTip="缩小" />
                 <TextBlock x:Name="ZoomPercentText" Text="100%" Width="40"
                            TextAlignment="Center" VerticalAlignment="Center"
-                           Foreground="Gray" FontSize="12" />
+                           Foreground="Gray" FontSize="14" />
                 <Button Content="+" Width="28" Padding="0"
                         Click="ZoomInBtn_Click" ToolTip="放大" />
             </StackPanel>

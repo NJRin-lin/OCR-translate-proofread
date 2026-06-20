@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Linq;
 using System.Speech.Synthesis;
 using System.Windows;
 using System.Windows.Controls;
@@ -47,23 +48,26 @@ public partial class OCRResultView : UserControl
     private void StartTTS()
     {
         if (_synth == null)
-            _synth = new SpeechSynthesizer();
-
-        _synth.SpeakCompleted += (_, _) =>
         {
-            _isSpeaking = false;
-            Dispatcher.Invoke(() => TTSButton.Content = "▶ 朗读");
-        };
+            _synth = new SpeechSynthesizer();
+            var jpVoice = _synth.GetInstalledVoices()
+                .FirstOrDefault(v => v.VoiceInfo.Culture.Name.StartsWith("ja"));
+            if (jpVoice != null)
+                _synth.SelectVoice(jpVoice.VoiceInfo.Name);
+
+            _synth.SpeakCompleted += (_, _) =>
+            {
+                _isSpeaking = false;
+                Dispatcher.Invoke(() => TTSButton.Content = "▶ 朗读");
+            };
+        }
 
         var text = _result?.FullText ?? "";
         _isSpeaking = true;
         TTSButton.Content = "⏹ 停止";
 
-        Task.Run(() =>
-        {
-            try { _synth.Speak(text); }
-            catch { _isSpeaking = false; }
-        });
+        var ssml = $"<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='ja-JP'>{System.Net.WebUtility.HtmlEncode(text)}</speak>";
+        _synth.SpeakSsmlAsync(ssml);
     }
 
     private void StopTTS()

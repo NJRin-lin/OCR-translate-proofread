@@ -20,8 +20,7 @@
                   Cursor="Cross">
                 <!-- Image element -->
                 <Image x:Name="MainImage" Stretch="Uniform"
-                       RenderTransformOrigin="0.5,0.5"
-                       MouseLeftButtonDown="ImageGrid_MouseLeftButtonDown">
+                       RenderTransformOrigin="0.5,0.5">
                     <Image.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="ImageScale" ScaleX="1" ScaleY="1" />
@@ -54,7 +53,7 @@
                             Click="ZoomOutBtn_Click" ToolTip="缩小" />
                     <TextBlock x:Name="ZoomPercentText" Text="100%" Width="40"
                                TextAlignment="Center" VerticalAlignment="Center"
-                               Foreground="Gray" FontSize="12" />
+                               Foreground="Gray" FontSize="14" />
                     <Button Content="+" Width="28" Padding="0"
                             Click="ZoomInBtn_Click" ToolTip="放大" />
                 </StackPanel>
@@ -72,7 +71,7 @@
 
                 <!-- Hint text -->
                 <TextBlock x:Name="ToolbarHintText" Grid.Column="0"
-                           Text="滑动平移 · 滚轮缩放" FontSize="12"
+                           Text="滑动平移 · 滚轮缩放" FontSize="14"
                            Foreground="Gray" VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis" MaxWidth="200" />
 
@@ -84,11 +83,11 @@
                             Visibility="Collapsed" Foreground="Orange" />
 
                     <!-- Full image -->
-                    <Button Content="▢ 全图识别" Padding="8,4" Margin="0,0,8,0"
+                    <Button Content="全图识别" Padding="8,4" Margin="0,0,8,0"
                             Click="FullImageBtn_Click" />
 
                     <!-- Dynamic: Enter selection / Cancel / Confirm -->
-                    <Button x:Name="EnterSelectionBtn" Content="▣ 选区识别"
+                    <Button x:Name="EnterSelectionBtn" Content="选区识别"
                             Padding="12,6" FontWeight="Bold"
                             Click="EnterSelectionBtn_Click" />
                     <Button x:Name="CancelSelectionBtn" Content="✕ 取消"
@@ -109,15 +108,13 @@
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="🖼" FontSize="48" HorizontalAlignment="Center"
                            Foreground="Gray" />
-                <TextBlock Text="点击截图按钮或上传图片开始" FontSize="14"
+                <TextBlock Text="上传图片开始识别" FontSize="14"
                            Foreground="Gray" HorizontalAlignment="Center"
                            Margin="0,12,0,20" />
                 <StackPanel HorizontalAlignment="Center">
                     <Button Content="🖼 上传图片" Width="160" Padding="12,8"
-                            FontWeight="Bold" Margin="0,0,0,8"
+                            FontWeight="Bold"
                             Click="UploadImageBtn_Click" />
-                    <Button Content="📷 截图识别" Width="160" Padding="12,8"
-                            Click="ScreenshotBtn_Click" />
                 </StackPanel>
             </StackPanel>
         </Grid>

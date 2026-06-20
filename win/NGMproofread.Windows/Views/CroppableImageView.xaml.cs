@@ -25,6 +25,8 @@ public partial class CroppableImageView : UserControl
     private bool _isSelectionMode;
     private Point? _selectionStart;
     private Point? _selectionEnd;
+    private Point? _selectionStartOrig;
+    private Point? _selectionEndOrig;
     private bool _isDraggingSelection;
     private bool _isMovingSelection;
     private string _dragHandle = ""; // "nw","ne","sw","se","n","s","e","w","move",""
@@ -93,6 +95,8 @@ public partial class CroppableImageView : UserControl
             {
                 _dragHandle = "move";
                 _isMovingSelection = true;
+                _selectionStartOrig = _selectionStart;
+                _selectionEndOrig = _selectionEnd;
                 return;
             }
             // Start new selection
@@ -200,7 +204,6 @@ public partial class CroppableImageView : UserControl
         _isSelectionMode = false;
         _selectionStart = null;
         _selectionEnd = null;
-        ApplyZoom(1.0);
         UpdateOverlay();
         UpdateUIStates();
     }
@@ -213,7 +216,6 @@ public partial class CroppableImageView : UserControl
             _isSelectionMode = false;
             _selectionStart = null;
             _selectionEnd = null;
-            ApplyZoom(1.0);
             UpdateOverlay();
             UpdateUIStates();
             ImageCropped?.Invoke(this, crop);
@@ -225,7 +227,6 @@ public partial class CroppableImageView : UserControl
         _isSelectionMode = false;
         _selectionStart = null;
         _selectionEnd = null;
-        ApplyZoom(1.0);
         UpdateUIStates();
         if (_image != null)
             ImageCropped?.Invoke(this, _image);
@@ -233,6 +234,7 @@ public partial class CroppableImageView : UserControl
 
     private void ClearSelectionBtn_Click(object sender, RoutedEventArgs e)
     {
+        _isSelectionMode = false;
         _selectionStart = null;
         _selectionEnd = null;
         UpdateOverlay();
@@ -240,7 +242,6 @@ public partial class CroppableImageView : UserControl
     }
 
     private void UploadImageBtn_Click(object sender, RoutedEventArgs e) => RequestNewImage?.Invoke(this, EventArgs.Empty);
-    private void ScreenshotBtn_Click(object sender, RoutedEventArgs e) => RequestNewImage?.Invoke(this, EventArgs.Empty);
 
     // ── Overlay drawing ──
 
@@ -395,9 +396,9 @@ public partial class CroppableImageView : UserControl
 
     private void MoveSelection(double dx, double dy)
     {
-        if (_selectionStart == null || _selectionEnd == null) return;
-        _selectionStart = new Point(_selectionStart.Value.X + dx, _selectionStart.Value.Y + dy);
-        _selectionEnd = new Point(_selectionEnd.Value.X + dx, _selectionEnd.Value.Y + dy);
+        if (_selectionStartOrig == null || _selectionEndOrig == null) return;
+        _selectionStart = new Point(_selectionStartOrig.Value.X + dx, _selectionStartOrig.Value.Y + dy);
+        _selectionEnd = new Point(_selectionEndOrig.Value.X + dx, _selectionEndOrig.Value.Y + dy);
     }
 
     private void ResizeSelection(Point pt, bool setLeft, bool setTop, bool setRight, bool setBottom)
@@ -441,9 +442,9 @@ public partial class CroppableImageView : UserControl
         var offsetX = (ImageGrid.ActualWidth - displaySize.Width) / 2;
         var offsetY = (ImageGrid.ActualHeight - displaySize.Height) / 2;
 
-        // Map selection coords to pixel coords
-        double px = (r.X - offsetX) / displaySize.Width * imgWidth;
-        double py = (r.Y - offsetY) / displaySize.Height * imgHeight;
+        // Map selection coords to pixel coords (account for pan offset)
+        double px = (r.X - offsetX - _panOffset.X) / displaySize.Width * imgWidth;
+        double py = (r.Y - offsetY - _panOffset.Y) / displaySize.Height * imgHeight;
         double pw = r.Width / displaySize.Width * imgWidth;
         double ph = r.Height / displaySize.Height * imgHeight;
 

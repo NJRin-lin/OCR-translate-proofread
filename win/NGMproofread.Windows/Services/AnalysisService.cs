@@ -7,7 +7,9 @@ namespace NGMproofread.Windows.Services;
 
 public class AnalysisService
 {
-    private readonly AIService _ai = new();
+    private readonly AIService _ai;
+
+    public AnalysisService(AIService ai) { _ai = ai; }
 
     public async Task<AnalysisResult> AnalyzeAsync(string text, AnalysisMode mode)
     {

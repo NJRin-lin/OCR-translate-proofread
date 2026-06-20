@@ -4,7 +4,9 @@ namespace NGMproofread.Windows.Services;
 
 public class TranslationService
 {
-    private readonly AIService _ai = new();
+    private readonly AIService _ai;
+
+    public TranslationService(AIService ai) { _ai = ai; }
 
     public async Task<TranslationResult> TranslateAsync(string text, string glossarySnippet = "")
     {

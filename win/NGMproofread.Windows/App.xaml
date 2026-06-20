@@ -32,7 +32,7 @@
         </Style>
 
         <Style TargetType="TextBlock" x:Key="CaptionText">
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
         </Style>
     </Application.Resources>

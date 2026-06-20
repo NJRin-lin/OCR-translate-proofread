@@ -41,5 +41,9 @@ obj/
 *.nuget.props
 *.nuget.targets
 
+# WPF publish output
+win/publish/
+win/publish-fd/
+
 # Temporary
 check_voices.ps1

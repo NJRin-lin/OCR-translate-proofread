@@ -8,8 +8,13 @@ namespace NGMproofread.Windows.Views;
 
 public partial class VocabularyLookupView : UserControl
 {
-    private readonly VocabularyService _service = new();
+    private VocabularyService _service = null!;
     private VocabEntry? _result;
+
+    public void SetService(VocabularyService service)
+    {
+        _service = service;
+    }
     private bool _isExpanded = true;
     private bool _isLoading;
     private string _externalQuery = "";
@@ -127,7 +132,7 @@ public partial class VocabularyLookupView : UserControl
 
         headStack.Children.Add(new TextBlock
         {
-            Text = $" ({_result.Reading})", FontSize = 11,
+            Text = $" ({_result.Reading})", FontSize = 15,
             Foreground = new SolidColorBrush(Colors.Gray),
             VerticalAlignment = VerticalAlignment.Center
         });
@@ -153,7 +158,7 @@ public partial class VocabularyLookupView : UserControl
         // Meaning
         ResultContent.Children.Add(new TextBlock
         {
-            Text = _result.Meaning, FontSize = 13,
+            Text = _result.Meaning, FontSize = 15,
             TextWrapping = TextWrapping.Wrap
         });
 
@@ -162,7 +167,7 @@ public partial class VocabularyLookupView : UserControl
         {
             ResultContent.Children.Add(new TextBlock
             {
-                Text = _result.Notes, FontSize = 11,
+                Text = _result.Notes, FontSize = 15,
                 Foreground = new SolidColorBrush(Colors.Gray),
                 Margin = new Thickness(0, 4, 0, 0)
             });
@@ -177,12 +182,12 @@ public partial class VocabularyLookupView : UserControl
                 var exRow = new StackPanel { Orientation = Orientation.Horizontal };
                 exRow.Children.Add(new TextBlock
                 {
-                    Text = "·", FontSize = 11,
+                    Text = "·", FontSize = 15,
                     Foreground = new SolidColorBrush(Color.FromRgb(0xAF, 0x52, 0xDE))
                 });
                 exRow.Children.Add(new TextBlock
                 {
-                    Text = ex, FontSize = 11,
+                    Text = ex, FontSize = 15,
                     TextWrapping = TextWrapping.Wrap,
                     Margin = new Thickness(4, 0, 0, 0)
                 });
@@ -200,7 +205,7 @@ public partial class VocabularyLookupView : UserControl
             Background = bg,
             Padding = new Thickness(5, 1, 5, 1),
             Margin = new Thickness(4, 0, 0, 0),
-            Child = new TextBlock { Text = text, FontSize = 10, Foreground = fg }
+            Child = new TextBlock { Text = text, FontSize = 12, Foreground = fg }
         };
     }
 }

@@ -87,10 +87,15 @@ public class GeminiResponse
 
 public class AIService
 {
-    private readonly APIKeyStore _store = new();
+    private readonly APIKeyStore _store;
     private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(60) };
 
     public AIProvider ActiveProvider => _store.ActiveProvider;
+
+    public AIService(APIKeyStore store)
+    {
+        _store = store;
+    }
 
     public async Task<string> ChatAsync(
         string systemPrompt,

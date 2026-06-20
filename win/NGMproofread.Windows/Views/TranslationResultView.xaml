@@ -10,31 +10,37 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="翻译结果" FontSize="14" FontWeight="Bold" />
-            <!-- Language direction badge -->
-            <Border Grid.Column="2" CornerRadius="10" Padding="8,3"
-                    Background="#0D000000">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="🇯🇵 日文" FontSize="11" Foreground="Gray" />
-                    <TextBlock Text=" → " FontSize="11" Foreground="Gray" />
-                    <TextBlock Text="🇨🇳 中文" FontSize="11" Foreground="Gray" />
-                </StackPanel>
-            </Border>
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button x:Name="ReTranslateBtn" Content="🔄 重新翻译分析"
+                        Padding="8,4" FontSize="13" Margin="0,0,8,0"
+                        Click="ReTranslateBtn_Click" />
+                <!-- Language direction badge -->
+                <Border CornerRadius="10" Padding="8,3"
+                        Background="#0D000000">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🇯🇵 日文" FontSize="15" Foreground="Gray" />
+                        <TextBlock Text=" → " FontSize="15" Foreground="Gray" />
+                        <TextBlock Text="🇨🇳 中文" FontSize="15" Foreground="Gray" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </Grid>
 
         <Separator Margin="0,0,0,8" />
 
-        <!-- Original text -->
+        <!-- Original text (editable) -->
         <StackPanel Margin="0,0,0,8">
-            <TextBlock Text="原文" FontSize="11" Foreground="Gray" Margin="0,0,0,4" />
-            <TextBox x:Name="OriginalText" IsReadOnly="True" TextWrapping="Wrap"
+            <TextBlock Text="原文（可编辑修改后重新翻译）" FontSize="15" Foreground="Gray" Margin="0,0,0,4" />
+            <TextBox x:Name="OriginalText" TextWrapping="Wrap"
                      FontSize="14" Background="#0D000000"
-                     BorderBrush="Transparent" Padding="8"
+                     BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                     BorderThickness="0.5" Padding="8"
                      VerticalScrollBarVisibility="Auto" MinHeight="40" />
         </StackPanel>
 
         <!-- Translated text -->
         <StackPanel>
-            <TextBlock Text="中文" FontSize="11" Foreground="Gray" Margin="0,0,0,4" />
+            <TextBlock Text="中文" FontSize="15" Foreground="Gray" Margin="0,0,0,4" />
             <TextBox x:Name="TranslatedText" IsReadOnly="True" TextWrapping="Wrap"
                      FontSize="14" BorderBrush="Transparent"
                      Padding="0" VerticalScrollBarVisibility="Auto" />
