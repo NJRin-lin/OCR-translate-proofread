@@ -1,0 +1,23 @@
+<UserControl x:Class="NGMproofread.Windows.Views.AnalysisView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <!-- Header -->
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="句子分析" FontSize="14" FontWeight="Bold" />
+            <!-- Mode badge -->
+            <Border x:Name="ModeBadge" Grid.Column="2" CornerRadius="10"
+                    Padding="8,3" Background="#0D000000">
+                <TextBlock x:Name="ModeBadgeText" FontSize="11" Foreground="Gray" />
+            </Border>
+        </Grid>
+
+        <!-- Analysis content -->
+        <ItemsControl x:Name="SentenceCards" />
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,192 @@
+<Window x:Class="NGMproofread.Windows.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="设置" Width="520" Height="600"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="16,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="设置" FontSize="18" FontWeight="Bold"
+                       VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="完成" Width="60" Padding="8,4"
+                    FontWeight="Bold" Click="DoneBtn_Click" />
+        </Grid>
+
+        <Separator Grid.Row="0" VerticalAlignment="Bottom" />
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="16" Orientation="Vertical">
+
+                <!-- 1. AI Model -->
+                <StackPanel Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="⚙" FontSize="14" Foreground="#007AFF"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="AI 模型" FontSize="14" FontWeight="Bold"
+                                   Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <RadioButton x:Name="DeepSeekRadio" Content="DeepSeek"
+                                 Margin="0,0,0,4" GroupName="Provider"
+                                 IsChecked="True" />
+                    <RadioButton x:Name="OpenAIRadio" Content="ChatGPT (OpenAI)"
+                                 Margin="0,0,0,4" GroupName="Provider" />
+                    <RadioButton x:Name="GeminiRadio" Content="Gemini (Google)"
+                                 GroupName="Provider" />
+                </StackPanel>
+
+                <Separator />
+
+                <!-- 2. API Key -->
+                <StackPanel Margin="0,16,0,20">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="🔑" FontSize="14" Foreground="#007AFF"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="APIKeyLabel" Text="DeepSeek API Key"
+                                   FontSize="14" FontWeight="Bold"
+                                   Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="API Key 仅存储在本机" FontSize="11"
+                               Foreground="Gray" Margin="0,0,0,8" />
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="APIKeyBox" Grid.Column="0"
+                                 FontFamily="Consolas" FontSize="13"
+                                 VerticalContentAlignment="Center"
+                                 Margin="0,0,6,0" />
+                        <Button Grid.Column="1" Content="👁" Width="32" Padding="0"
+                                Click="ToggleKeyVisibilityBtn_Click" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="SaveKeyBtn" Content="保存" Width="60"
+                                Padding="6,4" Margin="0,0,8,0" FontWeight="Bold"
+                                Click="SaveKeyBtn_Click" />
+                        <Button Content="删除" Width="60" Padding="6,4"
+                                Foreground="Red" Margin="0,0,8,0"
+                                Click="DeleteKeyBtn_Click" />
+                        <TextBlock x:Name="SaveStatusText" FontSize="11"
+                                   Foreground="Green" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="GetKeyLink" FontSize="10"
+                               Foreground="Gray" Margin="0,6,0,0"
+                               TextDecorations="Underline" />
+                </StackPanel>
+
+                <Separator />
+
+                <!-- 3. Analysis Mode -->
+                <StackPanel Margin="0,16,0,20">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="🔍" FontSize="14" Foreground="#AF52DE"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="默认分析深度" FontSize="14" FontWeight="Bold"
+                                   Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <RadioButton x:Name="StudyModeRadio"
+                                 Content="学习模式 — 句子拆解 + 语法 + 词汇注解"
+                                 Margin="0,0,0,4" GroupName="AnalysisMode"
+                                 IsChecked="True" />
+                    <RadioButton x:Name="ProofreadModeRadio"
+                                 Content="校对模式 — 精准句子成分拆解"
+                                 GroupName="AnalysisMode" />
+                </StackPanel>
+
+                <Separator />
+
+                <!-- 4. Glossary -->
+                <StackPanel Margin="0,16,0,20">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="📖" FontSize="14" Foreground="#FF9500"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="翻译术语表" FontSize="14" FontWeight="Bold"
+                                   Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="AI 翻译时将严格按照下列映射翻译指定词汇。建议单次使用的术语控制在 50 条以内"
+                               FontSize="11" Foreground="Gray" Margin="0,0,0,8"
+                               TextWrapping="Wrap" />
+
+                    <!-- Add entry -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="NewWordBox" Grid.Column="0"
+                                 FontSize="11" Margin="0,0,6,0"
+                                 Text="日语词汇" Foreground="Gray" />
+                        <TextBox x:Name="NewTranslationBox" Grid.Column="1"
+                                 FontSize="11" Margin="0,0,6,0"
+                                 Text="中文翻译" Foreground="Gray" />
+                        <Button Grid.Column="2" Content="添加" Width="60"
+                                Padding="6,4" FontWeight="Bold"
+                                Click="AddGlossaryBtn_Click" />
+                    </Grid>
+
+                    <!-- Entry list -->
+                    <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="GlossaryList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Display}"
+                                                   FontSize="11" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1" Content="✕" Width="20"
+                                                Height="20" FontSize="10" Padding="0"
+                                                Background="Transparent" BorderBrush="Transparent"
+                                                Foreground="Gray"
+                                                Click="RemoveGlossaryBtn_Click"
+                                                Tag="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBlock x:Name="NoGlossaryHint" Text="暂无术语，添加后翻译将自动应用"
+                               FontSize="11" Foreground="Gray" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <Separator />
+
+                <!-- 5. About -->
+                <StackPanel Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="ℹ" FontSize="14" Foreground="Gray"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="关于" FontSize="14" FontWeight="Bold"
+                                   Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="NGM proofread" FontSize="13" />
+                    <TextBlock Text="版本 1.0.0" FontSize="11" Foreground="Gray" />
+                    <TextBlock Text="开发者：NJRin" FontSize="11" Foreground="Gray" />
+                    <TextBlock Text="技术支持：虹之咲学园 Vibe Coding 同好会"
+                               FontSize="11" Foreground="Gray" />
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

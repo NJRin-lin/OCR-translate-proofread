@@ -1,0 +1,57 @@
+<UserControl x:Class="NGMproofread.Windows.Views.VocabularyLookupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <!-- Search bar -->
+        <Border Padding="12,8" Background="#E8F0F0F0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="🔍" FontSize="11" VerticalAlignment="Center"
+                           Margin="0,0,6,0" />
+
+                <TextBox x:Name="SearchBox" Grid.Column="1" FontSize="11"
+                         VerticalAlignment="Center" KeyDown="SearchBox_KeyDown" />
+
+                <!-- Clear button -->
+                <Button x:Name="ClearBtn" Grid.Column="2" Content="✕" Width="20" Height="20"
+                        FontSize="10" Padding="0"
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                        Click="ClearBtn_Click" Visibility="Collapsed" />
+
+                <!-- Search button -->
+                <Button x:Name="SearchBtn" Grid.Column="3" Content="🔍 查询" Padding="8,3"
+                        FontSize="11" Margin="4,0"
+                        Click="SearchBtn_Click" />
+
+                <!-- Loading indicator -->
+                <ProgressBar x:Name="SearchProgress" Grid.Column="3" Width="60"
+                             Height="16" IsIndeterminate="True"
+                             Visibility="Collapsed" Margin="4,0" />
+
+                <!-- Toggle expand -->
+                <Button x:Name="ToggleBtn" Grid.Column="4" Content="收起"
+                        Width="44" Padding="4,3" FontSize="11"
+                        Margin="4,0,0,0"
+                        Click="ToggleBtn_Click" Visibility="Collapsed" />
+            </Grid>
+        </Border>
+
+        <!-- Loading/Error -->
+        <TextBlock x:Name="ErrorText" FontSize="10" Foreground="Red"
+                   Margin="12,2,0,0" Visibility="Collapsed" />
+
+        <!-- Result card -->
+        <Border x:Name="ResultCard" CornerRadius="6" Margin="12,4,12,0"
+                Padding="10" Visibility="Collapsed"
+                BorderBrush="#33000000" BorderThickness="0.5">
+            <StackPanel x:Name="ResultContent" />
+        </Border>
+    </StackPanel>
+</UserControl>

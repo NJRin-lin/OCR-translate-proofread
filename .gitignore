@@ -1,0 +1,45 @@
+# Xcode
+*.xcuserdata
+*.xcworkspace
+xcuserdata/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+*.app
+*.dmg
+build/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# .NET
+bin/
+obj/
+*.nupkg
+*.snupkg
+*.DotSettings.user
+
+# NuGet
+*.nuget.props
+*.nuget.targets
+
+# Temporary
+check_voices.ps1
